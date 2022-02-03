@@ -1,5 +1,7 @@
 package main.model;
 
+import main.enums.Status;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
@@ -19,12 +21,6 @@ public class Post {
     @Enumerated(EnumType.STRING)
     @Column(name = "moderation_status", columnDefinition = "enum('NEW','ACCEPTED','DECLINED') default 'NEW'")
     private Status moderationStatus;
-
-    public enum Status{
-        NEW,
-        ACCEPTED,
-        DECLINED
-    }
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "moderator_id")
@@ -59,7 +55,7 @@ public class Post {
     private List<Tag> tags;
 
     @OneToMany(mappedBy = "post")
-    List<PostComment> comments;
+    private List<PostComment> comments;
 
 
 }

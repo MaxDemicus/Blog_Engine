@@ -3,7 +3,6 @@ package main.model;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
-import java.util.List;
 
 @Entity(name = "post_comments")
 public class PostComment {
@@ -15,9 +14,6 @@ public class PostComment {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "parent_id")
     private PostComment parentComment;
-
-    @OneToMany(mappedBy = "parentComment")
-    private List<PostComment> replies;
 
     @NotNull
     @ManyToOne(cascade = CascadeType.ALL)
