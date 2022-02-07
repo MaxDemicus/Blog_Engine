@@ -6,17 +6,36 @@ values ("code1", "email1", 1, "name1", "password1", "photo1", '2019-08-01 07:07:
 insert into posts (is_active, moderation_status, text, time, title, view_count, moderator_id, user_id)
 values (1, "NEW",  "text1", '2013-12-07 12:42:06', "title1", 2, NULL, 3),
 (1, "ACCEPTED",  "text2", '2008-10-25 05:32:26', "title2", 3, 1, 3),
-(0, "DECLINED",  "text3", '2015-11-20 15:01:59', "title3", 0, 1, 1);
+(0, "DECLINED",  "text3", '2015-11-20 15:01:59', "title3", 0, 1, 1),
+(1, "ACCEPTED",  "text4", '2018-01-01 02:02:02', "title4", 3, 2, 3),
+(1, "ACCEPTED",  "text5", '2017-12-20 06:34:20', "title5", 10, 1, 2),
+(1, "ACCEPTED",  "text6", '2009-01-25 07:36:16', "title6", 7, 1, 3),
+(1, "ACCEPTED",  "text7", '2013-03-03 08:38:00', "title7", 0, 2, 2),
+(1, "ACCEPTED",  "text8", '2020-05-28 09:40:59', "title8", 3, 1, 3),
+(1, "ACCEPTED",  "text9", '2023-10-17 10:50:44', "title9", 5, 1, 3);
 
 insert into post_comments (text, time, parent_id, post_id, user_id)
 values ("comment1_to_post_1", '2020-11-01 08:09:48', NULL, 1, 1),
 ("comment2_to_post_1", '2020-04-09 14:53:03', 1, 1, 2),
-("comment1_to_post2", '2012-10-29 10:12:37', NULL, 2, 3);
+("comment1_to_post2", '2012-10-29 10:12:37', NULL, 2, 3),
+("comment1_to_post_4", '2020-04-09 14:37:03', NULL, 4, 2),
+("comment2_to_post_4", '2021-01-08 12:24:56', 4, 4, 1),
+("comment1_to_post_5", '2012-04-09 14:02:34', NULL, 5, 2),
+("comment2_to_post_5", '2016-07-09 16:09:57', 6, 5, 1),
+("comment3_to_post_5", '2020-01-09 10:58:12', 6, 5, 3);
 
 insert into post_votes (time, value, post_id, user_id)
 values ('2021-03-27 10:22:42', 1, 1, 1),
 ('2020-08-07 07:57:23', 1, 2, 1),
-('2019-01-02 23:23:52', -1, 2, 3);
+('2021-07-09 01:50:28', 1, 2, 2),
+('2019-01-02 23:23:52', -1, 2, 3),
+('2021-07-09 01:50:28', 1, 4, 1),
+('2021-07-09 01:50:28', 1, 4, 2),
+('2021-07-09 01:50:28', 1, 4, 3),
+('2021-07-09 01:50:28', -1, 5, 1),
+('2021-07-09 01:50:28', -1, 5, 2),
+('2021-07-09 01:50:28', -1, 5, 3),
+('2021-07-09 01:50:28', -1, 5, 3);
 
 insert into tags (name)
 values ("tag1"), ("tag2"), ("tag3");

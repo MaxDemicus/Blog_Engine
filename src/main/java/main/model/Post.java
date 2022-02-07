@@ -12,10 +12,6 @@ import java.util.List;
 @Entity(name = "posts")
 public class Post {
 
-    public Post() {
-        this.time = new Timestamp(System.currentTimeMillis());
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
@@ -49,6 +45,7 @@ public class Post {
 
     @NotNull
     @Getter
+    @Setter
     private Timestamp time;
 
     @NotNull
