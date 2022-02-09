@@ -38,7 +38,7 @@ values ('2021-03-27 10:22:42', 1, 1, 1),
 ('2021-07-09 01:50:28', -1, 5, 3);
 
 insert into tags (name)
-values ("tag1"), ("tag2"), ("tag3");
+values ("tag1 для постов 1 и 2"), ("tag2 для поста 1"), ("tag3 без постов");
 
 insert into tag2post (post_id, tag_id)
-values (1, 1), (1, 2), (2, 3);
+values (1, 1), (1, 2), (2, 1);

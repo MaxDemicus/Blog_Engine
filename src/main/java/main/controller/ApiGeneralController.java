@@ -1,11 +1,15 @@
 package main.controller;
 
 import main.response.InitResponse;
+import main.response.TagResponse;
 import main.service.GlobalSettingService;
+import main.service.TagsService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -14,10 +18,12 @@ public class ApiGeneralController {
 
     private final GlobalSettingService globalSettingService;
     private final InitResponse initResponse;
+    private final TagsService tagsService;
 
-    public ApiGeneralController(GlobalSettingService globalSettingService, InitResponse initResponse) {
+    public ApiGeneralController(GlobalSettingService globalSettingService, InitResponse initResponse, TagsService tagsService) {
         this.globalSettingService = globalSettingService;
         this.initResponse = initResponse;
+        this.tagsService = tagsService;
     }
 
     @GetMapping("/init")
@@ -28,5 +34,10 @@ public class ApiGeneralController {
     @GetMapping("/settings")
     private Map<String, Boolean> settings(){
         return globalSettingService.getSettings();
+    }
+
+    @GetMapping("/tag")
+    public Map<String, List<TagResponse>> getTags(@RequestParam(defaultValue = "") String query){
+        return tagsService.getTags(query);
     }
 }
