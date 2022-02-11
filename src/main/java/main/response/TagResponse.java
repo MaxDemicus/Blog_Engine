@@ -3,6 +3,7 @@ package main.response;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter
 public class TagResponse {
 
     public TagResponse(String name, int weight) {
@@ -10,9 +11,7 @@ public class TagResponse {
         this.weight = weight;
     }
 
-    @Getter
     private final String name;
-    @Getter
     @Setter
     private float weight;
 }

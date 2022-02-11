@@ -1,5 +1,6 @@
 package main.model;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +9,8 @@ import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 
 @Entity(name = "captcha_codes")
+@Getter
+@Setter
 public class CaptchaCode {
 
     public CaptchaCode() {
@@ -16,21 +19,16 @@ public class CaptchaCode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
+    @Setter(AccessLevel.NONE)
     private int id;
 
     @NotNull
-    @Getter
     private Timestamp time;
 
     @NotNull
-    @Getter
-    @Setter
     private byte code;
 
     @NotNull
-    @Getter
-    @Setter
     @Column(name = "secret_code")
     private byte secretCode;
 }

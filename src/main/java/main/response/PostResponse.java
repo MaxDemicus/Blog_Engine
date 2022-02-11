@@ -3,6 +3,7 @@ package main.response;
 import lombok.Getter;
 import main.model.Post;
 
+@Getter
 public class PostResponse {
 
     public PostResponse(Post post) {
@@ -27,30 +28,19 @@ public class PostResponse {
         return text;
     }
 
-    @Getter
-    private int id;
-    @Getter
-    private long timestamp;
-    @Getter
-    private User user = new User();
-    @Getter
-    private String title;
-    @Getter
-    private String announce;
-    @Getter
-    private int likeCount;
-    @Getter
-    private int dislikeCount;
-    @Getter
-    private int commentCount;
-    @Getter
-    private int viewCount;
+    private final int id;
+    private final long timestamp;
+    private final User user = new User();
+    private final String title;
+    private final String announce;
+    private final int likeCount;
+    private final int dislikeCount;
+    private final int commentCount;
+    private final int viewCount;
 
     @Getter
     public static class User{
-        @Getter
         private int id;
-        @Getter
         private String name;
     }
 }

@@ -1,5 +1,6 @@
 package main.model;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +10,8 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Entity(name = "users")
+@Getter
+@Setter
 public class User {
 
     public User() {
@@ -17,13 +20,11 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
+    @Setter(AccessLevel.NONE)
     private int id;
 
     @NotNull
     @Column(name = "is_moderator")
-    @Getter
-    @Setter
     private byte isModerator;
 
     @NotNull
@@ -31,42 +32,28 @@ public class User {
     private Timestamp regTime;
 
     @NotNull
-    @Getter
-    @Setter
     private String name;
 
     @NotNull
-    @Getter
-    @Setter
     private String email;
 
     @NotNull
-    @Getter
-    @Setter
     private String password;
 
-    @Getter
-    @Setter
     private String code;
 
     @Column(columnDefinition="text")
-    @Getter
-    @Setter
     private String photo;
 
     @OneToMany(mappedBy = "moderator")
-    @Getter
     private List<Post> moderatedPosts;
 
     @OneToMany(mappedBy = "user")
-    @Getter
     private List<Post> createdPosts;
 
     @OneToMany(mappedBy = "user")
-    @Getter
     private List<PostVote> votes;
 
     @OneToMany(mappedBy = "user")
-    @Getter
     private List<PostComment> comments;
 }

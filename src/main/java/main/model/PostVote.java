@@ -1,5 +1,6 @@
 package main.model;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +9,8 @@ import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 
 @Entity(name = "post_votes")
+@Getter
+@Setter
 public class PostVote {
 
     public PostVote() {
@@ -16,29 +19,22 @@ public class PostVote {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter
+    @Setter(AccessLevel.NONE)
     private int id;
 
     @NotNull
     @JoinColumn(name = "user_id")
     @ManyToOne(cascade = CascadeType.ALL)
-    @Getter
-    @Setter
     private User user;
 
     @NotNull
     @JoinColumn(name = "post_id")
     @ManyToOne(cascade = CascadeType.ALL)
-    @Getter
-    @Setter
     private Post post;
 
     @NotNull
-    @Getter
     private Timestamp time;
 
     @NotNull
-    @Getter
-    @Setter
     private byte value;
 }
