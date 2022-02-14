@@ -19,7 +19,7 @@ public class ApiPostController {
     }
 
     @GetMapping()
-    public Map<String, Object> getPost(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit, @RequestParam(defaultValue = "recent") String mode){
+    private Map<String, Object> getPost(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit, @RequestParam(defaultValue = "recent") String mode){
         return postService.getPost(offset, limit, mode);
     }
 }

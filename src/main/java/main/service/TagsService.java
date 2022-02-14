@@ -19,6 +19,13 @@ public class TagsService {
         this.postRepository = postRepository;
     }
 
+    /**
+     * Возвращает список тегов, начинающихся на строку, заданную в параметре query,
+     * и их относительный нормированный вес от 0 до 1, соответствующий частоте встречаемости.
+     * Если query не задан, возвращаются все теги.
+     * @param query - строка для поиска
+     * @return Map, значение в котором - список объектов {@link TagResponse}: имя тега и его нормированный вес
+     */
     public Map<String, List<TagResponse>> getTags(String query){
         List<TagResponse> tags = tagRepository.getTags(query);
         int postCount = postRepository.countActivePosts();

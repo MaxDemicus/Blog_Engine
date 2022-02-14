@@ -19,6 +19,26 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
+    /**
+     * Возвращает список активных постов со всей сопутствующей информацией для главной страницы и подразделов
+     * "Новые", "Самые обсуждаемые", "Лучшие" и "Старые". Метод выводит посты, отсортированные в
+     * соответствии с параметром mode.
+     * @param offset номер страницы, 0 по умолчанию
+     * @param limit количество постов на странице, 10 по умолчанию
+     * @param mode метод сортировки:
+     *             <ul>
+     *             <li>recent - по дате публикации, сначала новые (по умолчанию);
+     *             <li>early - по дате публикации, сначала старые;
+     *             <li>popular - по убыванию количества комментариев;
+     *             <li>best - по убыванию количества лайков
+     *             </ul>
+     * @return Map, в котором:
+     * <ul>
+     * <li> ключ 'count' - общее количество постов, которое доступно по данному запросу с
+     * учётом всех фильтров, параметров доступности, кроме offset и limit
+     * <li> ключ 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link PostResponse}
+     * </ul>
+     */
     public Map<String, Object> getPost(int offset, int limit, String mode) {
         PageRequest page = PageRequest.of(offset, limit, getSort(mode));
         List<Post> posts = postRepository.findActivePosts(page);

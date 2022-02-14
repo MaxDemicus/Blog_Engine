@@ -16,6 +16,10 @@ public class GlobalSettingService {
         this.globalSettingRepository = globalSettingRepository;
     }
 
+    /**
+     * Возвращает глобальные настройки блога
+     * @return HashMap, где key - название настройки, value - значение настройки ('YES' или 'NO')
+     */
     public Map<String, Boolean> getSettings() {
         Map<String, Boolean> settings = new HashMap<>();
         for (GlobalSetting setting : globalSettingRepository.findAll())

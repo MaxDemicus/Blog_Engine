@@ -32,12 +32,12 @@ public class ApiGeneralController {
     }
 
     @GetMapping("/settings")
-    private Map<String, Boolean> settings(){
+    private Map<String, Boolean> getSettings(){
         return globalSettingService.getSettings();
     }
 
     @GetMapping("/tag")
-    public Map<String, List<TagResponse>> getTags(@RequestParam(defaultValue = "") String query){
+    private Map<String, List<TagResponse>> getTags(@RequestParam(defaultValue = "") String query){
         return tagsService.getTags(query);
     }
 }
