@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.Tuple;
 import java.util.List;
 
 @Repository
@@ -29,4 +30,19 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      */
     @Query(value = "select count(*)" + activePostsConditions, countQuery = "select * from posts", nativeQuery = true)
     int countActivePosts();
+
+    /**
+     * Возвращает года, за которые есть хотя бы одна активная публикация.
+     * @return Список годов в порядке возрастания
+     */
+    @Query(value = "select year(time) as year" + activePostsConditions + " group by year order by year", nativeQuery = true)
+    List<Integer> getYears();
+
+    /**
+     * Возвращает количества публикаций на каждую дату переданного в параметре year года
+     * @param year год
+     * @return список кортежей (класс {@link Tuple}) формата 'дата - количеств публикаций'
+     */
+    @Query(value = "select date(time) as date, count(*) as count" + activePostsConditions + " and year(time) = :year group by date(time)", nativeQuery = true)
+    List<Tuple> getCalendar(String year);
 }

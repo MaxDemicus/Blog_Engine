@@ -8,6 +8,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.Tuple;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -63,5 +65,26 @@ public class PostService {
             default:
                 return JpaSort.by(Sort.Direction.DESC, "time");
         }
+    }
+
+    /**
+     * Возвращает количества публикаций на каждую дату переданного в параметре year года
+     * или текущего года, если параметр year не задан.
+     * @param year - год в виде четырёхзначного числа, если не передан - возвращать за текущий год.
+     * @return Map, в котором:
+     * <ul>
+     * <li> ключ 'years' - список всех годов, за которые была хотя бы одна публикация,
+     *  в порядке возрастания
+     * <li> ключ 'posts' - количества публикаций на каждую дату года
+     * </ul>
+     */
+    public Map<String, Object> getCalendar(String year){
+        if (year == null)
+            year = String.valueOf(LocalDate.now().getYear());
+        Map<String, Object> counts = new HashMap<>();
+        for (Tuple tuple : postRepository.getCalendar(year)){
+            counts.put(String.valueOf(tuple.get("date")), tuple.get("count"));
+        }
+        return Map.of("years", postRepository.getYears(), "posts", counts);
     }
 }
