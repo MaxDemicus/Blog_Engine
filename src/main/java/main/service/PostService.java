@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.Tuple;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -44,11 +45,33 @@ public class PostService {
     public Map<String, Object> getPost(int offset, int limit, String mode) {
         PageRequest page = PageRequest.of(offset, limit, getSort(mode));
         List<Post> posts = postRepository.findActivePosts(page);
-        List<PostResponse> responses = new ArrayList<>();
-        for (Post post : posts)
-            responses.add(new PostResponse(post));
+        int postCount = postRepository.countActivePosts();
+        return formResponseBody(postCount, posts);
+    }
+
+    /**
+     * Возвращает посты, соответствующие поисковому запросу. В случае, если запрос
+     * пустой или содержит только пробелы, метод должен выводить все посты.
+     * @param offset номер страницы, 0 по умолчанию
+     * @param limit количество постов на странице, 10 по умолчанию
+     * @param query поисковый запорс
+     * @return Map, в котором:
+     * <ul>
+     * <li> ключ 'count' - общее количество постов, которое доступно по данному запросу
+     * <li> ключ 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link PostResponse}
+     * </ul>
+     */
+    public Map<String, Object> getPostBySearch(int offset, int limit, String query) {
+        PageRequest page = PageRequest.of(offset, limit, getSort("recent"));
+        List<Post> posts = postRepository.findActivePostsBySearch(page, query);
+        int postCount = postRepository.countActivePostsBySearch(query);
+        return formResponseBody(postCount, posts);
+    }
+
+    private Map<String, Object> formResponseBody(int postCount, List<Post> posts){
+        List<PostResponse> responses = posts.stream().map(PostResponse::new).collect(Collectors.toList());
         Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("count", postRepository.countActivePosts());
+        responseBody.put("count", postCount);
         responseBody.put("posts", responses);
         return responseBody;
     }

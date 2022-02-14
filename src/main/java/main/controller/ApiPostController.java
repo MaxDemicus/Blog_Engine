@@ -22,4 +22,9 @@ public class ApiPostController {
     private Map<String, Object> getPost(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit, @RequestParam(defaultValue = "recent") String mode){
         return postService.getPost(offset, limit, mode);
     }
+
+    @GetMapping("/search")
+    private Map<String, Object> getPostSearch(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit, @RequestParam(defaultValue = "") String query){
+        return postService.getPostBySearch(offset, limit, query);
+    }
 }

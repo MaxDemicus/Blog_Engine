@@ -21,15 +21,32 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @param page объект PаgeRequest, задающий пагинацию и метод сортировки
      * @return список постов
      */
-    @Query(value = "select *" + activePostsConditions + " order by ?1", countQuery = "select * from posts", nativeQuery = true)
+    @Query(value = "select *" + activePostsConditions + " order by :page", nativeQuery = true)
     List<Post> findActivePosts(PageRequest page);
+
+    /**
+     * Возвращает посты, соответствующие поисковому запросу.
+     * @param page объект PаgeRequest, задающий пагинацию и метод сортировки
+     * @param query посиковый запрос
+     * @return список постов
+     */
+    @Query(value = "select *" + activePostsConditions + " and p.text like %:query% order by :page", nativeQuery = true)
+    List<Post> findActivePostsBySearch(PageRequest page, String query);
 
     /**
      * Возвращает общее количество активных постов
      * @return количество постов
      */
-    @Query(value = "select count(*)" + activePostsConditions, countQuery = "select * from posts", nativeQuery = true)
+    @Query(value = "select count(*)" + activePostsConditions, nativeQuery = true)
     int countActivePosts();
+
+    /**
+     * Возвращает количество активных постов, соответствующих поисковому запросу
+     * @param query поисковый запрос
+     * @return количество постов
+     */
+    @Query(value = "select count(*)" + activePostsConditions + " and p.text like %:query%", nativeQuery = true)
+    int countActivePostsBySearch(String query);
 
     /**
      * Возвращает года, за которые есть хотя бы одна активная публикация.
