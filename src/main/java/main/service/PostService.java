@@ -68,6 +68,24 @@ public class PostService {
         return formResponseBody(postCount, posts);
     }
 
+    /**
+     * Выводит посты за указанную дату, переданную в запросе в параметре date.
+     * @param offset номер страницы, 0 по умолчанию
+     * @param limit количество постов на странице, 10 по умолчанию
+     * @param date поисковый запрос
+     * @return Map, в котором:
+     * <ul>
+     * <li> ключ 'count' - общее количество постов, которое доступно по данному запросу
+     * <li> ключ 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link PostResponse}
+     * </ul>
+     */
+    public Map<String, Object> getPostByDate(int offset, int limit, String date) {
+        PageRequest page = PageRequest.of(offset, limit);
+        List<Post> posts = postRepository.findActivePostsByDate(page, date);
+        int postCount = postRepository.countActivePostsByDate(date);
+        return formResponseBody(postCount, posts);
+    }
+
     private Map<String, Object> formResponseBody(int postCount, List<Post> posts){
         List<PostResponse> responses = posts.stream().map(PostResponse::new).collect(Collectors.toList());
         Map<String, Object> responseBody = new HashMap<>();

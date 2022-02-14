@@ -27,4 +27,9 @@ public class ApiPostController {
     private Map<String, Object> getPostSearch(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit, @RequestParam(defaultValue = "") String query){
         return postService.getPostBySearch(offset, limit, query);
     }
+
+    @GetMapping("/byDate")
+    private Map<String, Object> getPostByDate(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit, @RequestParam String date){
+        return postService.getPostByDate(offset, limit, date);
+    }
 }

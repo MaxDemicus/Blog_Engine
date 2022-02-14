@@ -12,7 +12,10 @@ values (1, "NEW",  "text1", '2013-12-07 12:42:06', "title1", 2, NULL, 3),
 (1, "ACCEPTED",  "text6", '2009-01-25 07:36:16', "title6", 7, 1, 3),
 (1, "ACCEPTED",  "text7", '2013-03-03 08:38:00', "title7", 0, 2, 2),
 (1, "ACCEPTED",  "text8", '2020-05-28 09:40:59', "title8", 3, 1, 3),
-(1, "ACCEPTED",  "text9", '2023-10-17 10:50:44', "title9", 5, 1, 3);
+(1, "ACCEPTED",  "text9", '2023-10-17 10:50:44', "title9", 5, 1, 3),
+(1, "ACCEPTED",  "text10", '2022-01-07 12:42:06', "title10", 2, 2, 1),
+(1, "ACCEPTED",  "text11", '2022-01-07 05:32:26', "title11", 3, 1, 2),
+(1, "ACCEPTED",  "text12", '2022-02-01 09:12:48', "title12", 7, 1, 3);
 
 insert into post_comments (text, time, parent_id, post_id, user_id)
 values ("comment1_to_post_1", '2020-11-01 08:09:48', NULL, 1, 1),

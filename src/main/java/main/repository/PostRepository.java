@@ -34,6 +34,15 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     List<Post> findActivePostsBySearch(PageRequest page, String query);
 
     /**
+     * Выводит посты за указанную дату
+     * @param page объект PаgeRequest, задающий пагинацию
+     * @param date поисковый запрос
+     * @return список постов
+     */
+    @Query(value = "select *" + activePostsConditions + " and date(time) = :date order by :page", nativeQuery = true)
+    List<Post> findActivePostsByDate(PageRequest page, String date);
+
+    /**
      * Возвращает общее количество активных постов
      * @return количество постов
      */
@@ -47,6 +56,14 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      */
     @Query(value = "select count(*)" + activePostsConditions + " and p.text like %:query%", nativeQuery = true)
     int countActivePostsBySearch(String query);
+
+    /**
+     * Возвращает количество активных постов за указанную дату
+     * @param date поисковый запрос
+     * @return количество постов
+     */
+    @Query(value = "select count(*)" + activePostsConditions + " and date(time) = :date", nativeQuery = true)
+    int countActivePostsByDate(String date);
 
     /**
      * Возвращает года, за которые есть хотя бы одна активная публикация.
