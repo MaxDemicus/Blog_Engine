@@ -86,6 +86,25 @@ public class PostService {
         return formResponseBody(postCount, posts);
     }
 
+    /**
+     * Выводит список постов, привязанных к тэгу, который был передан методу в качестве параметра
+     * tag
+     * @param offset сдвиг от 0 для постраничного вывода, 0 по умолчанию
+     * @param limit количество постов, которое надо вывести, 10 по умолчанию
+     * @param tag тэг, по которому нужно вывести все посты
+     * @return Map, в котором:
+     * <ul>
+     * <li> ключ 'count' - общее количество постов, которое доступно по данному запросу
+     * <li> ключ 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link PostResponse}
+     * </ul>
+     */
+    public Map<String, Object> getPostByTag(int offset, int limit, String tag) {
+        PageRequest page = PageRequest.of(offset, limit);
+        List<Post> posts = postRepository.findActivePostsByTag(page, tag);
+        int postCount = postRepository.countActivePostsByTag(tag);
+        return formResponseBody(postCount, posts);
+    }
+
     private Map<String, Object> formResponseBody(int postCount, List<Post> posts){
         List<PostResponse> responses = posts.stream().map(PostResponse::new).collect(Collectors.toList());
         Map<String, Object> responseBody = new HashMap<>();
