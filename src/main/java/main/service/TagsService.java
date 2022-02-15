@@ -1,10 +1,12 @@
 package main.service;
 
-import main.repository.PostRepository;
 import main.repository.TagRepository;
 import main.response.TagResponse;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.Tuple;
+import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -12,11 +14,9 @@ import java.util.Map;
 public class TagsService {
 
     private final TagRepository tagRepository;
-    private final PostRepository postRepository;
 
-    public TagsService(TagRepository tagRepository, PostRepository postRepository) {
+    public TagsService(TagRepository tagRepository) {
         this.tagRepository = tagRepository;
-        this.postRepository = postRepository;
     }
 
     /**
@@ -27,17 +27,17 @@ public class TagsService {
      * @return Map, значение в котором - список объектов {@link TagResponse}: имя тега и его нормированный вес
      */
     public Map<String, List<TagResponse>> getTags(String query){
-        List<TagResponse> tags = tagRepository.getTags(query);
-        int postCount = postRepository.countActivePosts();
-        float maxWeight = 0;
-        for (TagResponse tag : tags){
-            tag.setWeight(tag.getWeight() / postCount);
-            if (tag.getWeight() > maxWeight)
-                maxWeight = tag.getWeight();
+        List<Tuple> tags = tagRepository.getTags(query);
+        float maxCount = 0;
+        for (Tuple tag : tags) {
+            maxCount = Math.max(maxCount, tag.get("count", BigInteger.class).intValue());
         }
-        for (TagResponse tag : tags){
-            tag.setWeight(tag.getWeight() / maxWeight);
+        List<TagResponse> responses = new ArrayList<>();
+        for (Tuple tag : tags) {
+            String name = tag.get("tag", String.class);
+            float weight = tag.get("count", BigInteger.class).intValue() / maxCount;
+            responses.add(new TagResponse(name, weight));
         }
-        return Map.of("tags", tags);
+        return Map.of("tags", responses);
     }
 }
