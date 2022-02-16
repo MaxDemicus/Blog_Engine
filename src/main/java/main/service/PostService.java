@@ -2,7 +2,7 @@ package main.service;
 
 import main.model.Post;
 import main.repository.PostRepository;
-import main.response.PostResponse;
+import main.response.PostAnnounceResponse;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
@@ -39,7 +39,7 @@ public class PostService {
      * <ul>
      * <li> ключ 'count' - общее количество постов, которое доступно по данному запросу с
      * учётом всех фильтров, параметров доступности, кроме offset и limit
-     * <li> ключ 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link PostResponse}
+     * <li> ключ 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link PostAnnounceResponse}
      * </ul>
      */
     public Map<String, Object> getPost(int offset, int limit, String mode) {
@@ -58,7 +58,7 @@ public class PostService {
      * @return Map, в котором:
      * <ul>
      * <li> ключ 'count' - общее количество постов, которое доступно по данному запросу
-     * <li> ключ 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link PostResponse}
+     * <li> ключ 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link PostAnnounceResponse}
      * </ul>
      */
     public Map<String, Object> getPostBySearch(int offset, int limit, String query) {
@@ -76,7 +76,7 @@ public class PostService {
      * @return Map, в котором:
      * <ul>
      * <li> ключ 'count' - общее количество постов, которое доступно по данному запросу
-     * <li> ключ 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link PostResponse}
+     * <li> ключ 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link PostAnnounceResponse}
      * </ul>
      */
     public Map<String, Object> getPostByDate(int offset, int limit, String date) {
@@ -95,7 +95,7 @@ public class PostService {
      * @return Map, в котором:
      * <ul>
      * <li> ключ 'count' - общее количество постов, которое доступно по данному запросу
-     * <li> ключ 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link PostResponse}
+     * <li> ключ 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link PostAnnounceResponse}
      * </ul>
      */
     public Map<String, Object> getPostByTag(int offset, int limit, String tag) {
@@ -106,7 +106,7 @@ public class PostService {
     }
 
     private Map<String, Object> formResponseBody(int postCount, List<Post> posts){
-        List<PostResponse> responses = posts.stream().map(PostResponse::new).collect(Collectors.toList());
+        List<PostAnnounceResponse> responses = posts.stream().map(PostAnnounceResponse::new).collect(Collectors.toList());
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("count", postCount);
         responseBody.put("posts", responses);
