@@ -3,10 +3,12 @@ package main.repository;
 import main.model.Post;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.Tuple;
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -96,4 +98,21 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      */
     @Query(value = "select date(time) as date, count(*) as count" + activePostsConditions + " and year(time) = :year group by date(time)", nativeQuery = true)
     List<Tuple> getCalendar(String year);
+
+    /**
+     * Возвращает пост по номеру
+     * @param id номер поста
+     * @return пост с номером id
+     */
+    @Query("select p from posts p where id = :id")
+    Post findPostById(int id);
+
+    /**
+     * Увеличивает количество просмотров поста на один
+     * @param postId номер поста
+     */
+    @Query(value = "update posts set view_count = view_count + 1 where id = :postId", nativeQuery = true)
+    @Modifying
+    @Transactional
+    void increaseViewCount(int postId);
 }

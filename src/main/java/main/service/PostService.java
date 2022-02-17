@@ -3,9 +3,12 @@ package main.service;
 import main.model.Post;
 import main.repository.PostRepository;
 import main.response.PostAnnounceResponse;
+import main.response.PostFullResponse;
+import main.response.UserResponse;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Tuple;
@@ -17,9 +20,11 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final AuthService authService;
 
-    public PostService(PostRepository postRepository) {
+    public PostService(PostRepository postRepository, AuthService authService) {
         this.postRepository = postRepository;
+        this.authService = authService;
     }
 
     /**
@@ -111,6 +116,33 @@ public class PostService {
         responseBody.put("count", postCount);
         responseBody.put("posts", responses);
         return responseBody;
+    }
+
+    /**
+     * Возвращает данные конкретного поста, в том числе список
+     * комментариев и тегов, привязанных к данному посту. Если пост не найден, возвращает код 404 (Документ на найден)
+     * @param id номер поста
+     * @return полную информацию о посте в виде объекта {@link PostFullResponse} или код 404, если пост не найден
+     */
+    public ResponseEntity<PostFullResponse> getPostById(int id){
+        Post post = postRepository.findPostById(id);
+        if (post != null) {
+            increaseViewCount(post);
+            return ResponseEntity.ok(new PostFullResponse(post));
+        } else
+            return ResponseEntity.notFound().build();
+    }
+
+    private void increaseViewCount(Post post){
+        Map<String, Object> auth = authService.check();
+        boolean userAuthorized = (boolean) auth.get("result");
+        if (userAuthorized){
+            UserResponse user = (UserResponse) auth.get("user");
+            if (user.isModeration() || user.getId() == post.getUser().getId())
+                return;
+        }
+        postRepository.increaseViewCount(post.getId());
+        post.setViewCount(post.getViewCount() + 1);
     }
 
     private Sort getSort(String mode) {

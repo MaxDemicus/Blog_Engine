@@ -1,12 +1,12 @@
 package main.controller;
 
+import main.response.PostFullResponse;
 import main.service.PostService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/post")
@@ -36,5 +36,11 @@ public class ApiPostController {
     @GetMapping("/byTag")
     private Map<String, Object> getPostByTag(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit, @RequestParam String tag){
         return postService.getPostByTag(offset, limit, tag);
+    }
+
+    @GetMapping("/{ID}")
+    private ResponseEntity<PostFullResponse> getPostById(@PathVariable int ID){
+        return postService.getPostById(ID);
+
     }
 }
