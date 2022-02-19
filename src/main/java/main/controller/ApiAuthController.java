@@ -21,4 +21,9 @@ public class ApiAuthController {
     private Map<String, Object> check(){
         return authService.check();
     }
+
+    @GetMapping("/captcha")
+    private Map<String, String> captcha(){
+        return authService.getCaptchaCode();
+    }
 }

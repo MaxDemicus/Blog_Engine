@@ -1,4 +1,4 @@
-create table captcha_codes (id integer not null auto_increment, code tinyint not null, secret_code tinyint not null, time datetime(6) not null, primary key (id));
+create table captcha_codes (id integer not null auto_increment, code tinytext not null, secret_code tinytext not null, time datetime(6) not null, primary key (id));
 create table global_settings (id integer not null auto_increment, code varchar(255) not null, name varchar(255) not null, value varchar(255) not null, primary key (id));
 create table post_comments (id integer not null auto_increment, text text not null, time datetime(6) not null, parent_id integer, post_id integer not null, user_id integer not null, primary key (id));
 create table post_votes (id integer not null auto_increment, time datetime(6) not null, value tinyint check (value in (-1, 1)) not null, post_id integer not null, user_id integer not null, primary key (id));

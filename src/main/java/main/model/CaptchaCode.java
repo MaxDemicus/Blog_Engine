@@ -26,9 +26,10 @@ public class CaptchaCode {
     private Timestamp time;
 
     @NotNull
-    private byte code;
+    @Column(columnDefinition = "tinytext")
+    private String code;
 
     @NotNull
-    @Column(name = "secret_code")
-    private byte secretCode;
+    @Column(name = "secret_code", columnDefinition = "tinytext")
+    private String secretCode;
 }
