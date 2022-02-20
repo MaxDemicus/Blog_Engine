@@ -1,9 +1,8 @@
 package main.controller;
 
+import main.request.RegisterRequest;
 import main.service.AuthService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -25,5 +24,10 @@ public class ApiAuthController {
     @GetMapping("/captcha")
     private Map<String, String> captcha(){
         return authService.getCaptchaCode();
+    }
+
+    @PostMapping("/register")
+    private Map<String, Object> register(@RequestBody RegisterRequest user){
+        return authService.register(user);
     }
 }

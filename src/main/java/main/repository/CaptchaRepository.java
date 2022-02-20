@@ -19,6 +19,15 @@ public interface CaptchaRepository extends JpaRepository<CaptchaCode, Integer> {
     void saveCaptcha(String code, String secretCode);
 
     /**
+     * Ищет в таблице Captcha_Codes запись с указанными кодами
+     * @param code код каптчи, введённый пользователем
+     * @param secretCode идентификационный код каптчи в базе
+     * @return найденную строч
+     */
+    @Query("select count(cc) from captcha_codes cc where code = :code and secret_code = :secretCode")
+    byte checkCaptcha(String code, String secretCode);
+
+    /**
      * Удаляет устаревшие каптчи из таблицы.
      * @param captchaObsoletePeriod Время устаревания в минутах. Задано в файле конфигурации в параметре captcha_obsolete_period (по умолчанию 60).
      */
