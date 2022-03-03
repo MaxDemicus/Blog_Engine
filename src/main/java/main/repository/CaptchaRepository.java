@@ -10,16 +10,7 @@ import org.springframework.stereotype.Repository;
 public interface CaptchaRepository extends JpaRepository<CaptchaCode, Integer> {
 
     /**
-     * Сохраняет в базу данных коды каптчи
-     * @param code основной код, изображённый на картинке для пользователя
-     * @param secretCode уникальный идентификатор, по которому будет найден код в таблице при проверке
-     */
-    @Query(value = "insert into captcha_codes (code, secret_code, time) values (:code, :secretCode, now())", nativeQuery = true)
-    @Modifying
-    void saveCaptcha(String code, String secretCode);
-
-    /**
-     * Ищет в таблице Captcha_Codes запись с указанными кодами
+     * Ищет в таблице Captcha_Codes количество записей с указанными кодами
      * @param code код каптчи, введённый пользователем
      * @param secretCode идентификационный код каптчи в базе
      * @return количество найденных записей
@@ -31,7 +22,7 @@ public interface CaptchaRepository extends JpaRepository<CaptchaCode, Integer> {
      * Удаляет устаревшие каптчи из таблицы.
      * @param captchaObsoletePeriod Время устаревания в минутах. Задано в файле конфигурации в параметре captcha_obsolete_period (по умолчанию 60).
      */
-    @Query(value = "delete from captcha_codes where time < (now() - interval :captchaObsoletePeriod minute)", nativeQuery = true)
+    @Query(value = "delete from captcha_codes where time < timestampadd(minute, -:captchaObsoletePeriod, now())", nativeQuery = true)
     @Modifying
     void deleteObsolete(int captchaObsoletePeriod);
 }

@@ -2,6 +2,7 @@ package main.service;
 
 import com.github.cage.Cage;
 import com.github.cage.GCage;
+import main.model.CaptchaCode;
 import main.model.User;
 import main.repository.CaptchaRepository;
 import main.repository.UserRepository;
@@ -59,7 +60,7 @@ public class AuthService {
         byte[] imageBytes = cage.draw(code);
         String image64 = Base64.getEncoder().encodeToString(imageBytes);
         String secret = UUID.nameUUIDFromBytes(imageBytes).toString().replaceAll("-", "");
-        captchaRepository.saveCaptcha(code, secret);
+        captchaRepository.save(new CaptchaCode(code, secret));
         captchaRepository.deleteObsolete(captchaObsoletePeriod);
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("secret", secret);

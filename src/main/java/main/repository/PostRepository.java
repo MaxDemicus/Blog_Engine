@@ -3,12 +3,10 @@ package main.repository;
 import main.model.Post;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.Tuple;
-import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -23,7 +21,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @param page объект PаgeRequest, задающий пагинацию и метод сортировки
      * @return список постов
      */
-    @Query(value = "select *" + activePostsConditions + " order by :page", nativeQuery = true)
+    @Query(value = "select *" + activePostsConditions, nativeQuery = true)
     List<Post> findActivePosts(PageRequest page);
 
     /**
@@ -32,8 +30,8 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @param query посиковый запрос
      * @return список постов
      */
-    @Query(value = "select *" + activePostsConditions + " and p.text like %:query% order by :page", nativeQuery = true)
-    List<Post> findActivePostsBySearch(PageRequest page, String query);
+    @Query(value = "select *" + activePostsConditions + " and p.text like %?1%", nativeQuery = true)
+    List<Post> findActivePostsBySearch(String query, PageRequest page);
 
     /**
      * Выводит посты за указанную дату
@@ -41,8 +39,8 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @param date поисковый запрос
      * @return список постов
      */
-    @Query(value = "select *" + activePostsConditions + " and date(time) = :date order by :page", nativeQuery = true)
-    List<Post> findActivePostsByDate(PageRequest page, String date);
+    @Query(value = "select *" + activePostsConditions + " and date(time) = ?1", nativeQuery = true)
+    List<Post> findActivePostsByDate(String date, PageRequest page);
 
     /**
      * Выводит посты, привязанные к указанному тегу
@@ -50,8 +48,8 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @param tag запрошенный тег
      * @return список постов
      */
-    @Query(value = "select p.*" + activePostsAndTagsConditions + " and t.name = :tag order by :page", nativeQuery = true)
-    List<Post> findActivePostsByTag(PageRequest page, String tag);
+    @Query(value = "select p.*" + activePostsAndTagsConditions + " and t.name = ?1", nativeQuery = true)
+    List<Post> findActivePostsByTag(String tag, PageRequest page);
 
     /**
      * Возвращает общее количество активных постов
@@ -98,21 +96,4 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      */
     @Query(value = "select date(time) as date, count(*) as count" + activePostsConditions + " and year(time) = :year group by date(time)", nativeQuery = true)
     List<Tuple> getCalendar(String year);
-
-    /**
-     * Возвращает пост по номеру
-     * @param id номер поста
-     * @return пост с номером id
-     */
-    @Query("select p from posts p where id = :id")
-    Post findPostById(int id);
-
-    /**
-     * Увеличивает количество просмотров поста на один
-     * @param postId номер поста
-     */
-    @Query(value = "update posts set view_count = view_count + 1 where id = :postId", nativeQuery = true)
-    @Modifying
-    @Transactional
-    void increaseViewCount(int postId);
 }

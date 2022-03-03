@@ -2,7 +2,7 @@ package main.model;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 import main.request.RegisterRequest;
 
 import javax.persistence.*;
@@ -12,7 +12,7 @@ import java.util.List;
 
 @Entity(name = "users")
 @Getter
-@Setter
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class User {
 
     public User(RegisterRequest user) {
@@ -25,7 +25,6 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Setter(AccessLevel.NONE)
     private int id;
 
     @NotNull

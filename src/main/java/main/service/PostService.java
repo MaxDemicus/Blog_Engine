@@ -68,7 +68,7 @@ public class PostService {
      */
     public Map<String, Object> getPostBySearch(int offset, int limit, String query) {
         PageRequest page = PageRequest.of(offset, limit, getSort("recent"));
-        List<Post> posts = postRepository.findActivePostsBySearch(page, query);
+        List<Post> posts = postRepository.findActivePostsBySearch(query, page);
         int postCount = postRepository.countActivePostsBySearch(query);
         return formResponseBody(postCount, posts);
     }
@@ -86,7 +86,7 @@ public class PostService {
      */
     public Map<String, Object> getPostByDate(int offset, int limit, String date) {
         PageRequest page = PageRequest.of(offset, limit);
-        List<Post> posts = postRepository.findActivePostsByDate(page, date);
+        List<Post> posts = postRepository.findActivePostsByDate(date, page);
         int postCount = postRepository.countActivePostsByDate(date);
         return formResponseBody(postCount, posts);
     }
@@ -105,7 +105,7 @@ public class PostService {
      */
     public Map<String, Object> getPostByTag(int offset, int limit, String tag) {
         PageRequest page = PageRequest.of(offset, limit);
-        List<Post> posts = postRepository.findActivePostsByTag(page, tag);
+        List<Post> posts = postRepository.findActivePostsByTag(tag, page);
         int postCount = postRepository.countActivePostsByTag(tag);
         return formResponseBody(postCount, posts);
     }
@@ -125,7 +125,7 @@ public class PostService {
      * @return полную информацию о посте в виде объекта {@link PostFullResponse} или код 404, если пост не найден
      */
     public ResponseEntity<PostFullResponse> getPostById(int id){
-        Post post = postRepository.findPostById(id);
+        Post post = postRepository.findById(id).orElse(null);
         if (post != null) {
             increaseViewCount(post);
             return ResponseEntity.ok(new PostFullResponse(post));
@@ -143,8 +143,8 @@ public class PostService {
                 return;
             }
         }
-        postRepository.increaseViewCount(post.getId());
         post.setViewCount(post.getViewCount() + 1);
+        postRepository.save(post);
     }
 
     private Sort getSort(String mode) {

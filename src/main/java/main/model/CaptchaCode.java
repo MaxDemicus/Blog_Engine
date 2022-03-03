@@ -1,8 +1,6 @@
 package main.model;
 
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -10,26 +8,26 @@ import java.sql.Timestamp;
 
 @Entity(name = "captcha_codes")
 @Getter
-@Setter
 public class CaptchaCode {
 
-    public CaptchaCode() {
+    public CaptchaCode(String code, String secretCode) {
+        this.code = code;
+        this.secretCode = secretCode;
         this.time = new Timestamp(System.currentTimeMillis());
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Setter(AccessLevel.NONE)
     private int id;
 
     @NotNull
-    private Timestamp time;
+    private final Timestamp time;
 
     @NotNull
     @Column(columnDefinition = "tinytext")
-    private String code;
+    private final String code;
 
     @NotNull
     @Column(name = "secret_code", columnDefinition = "tinytext")
-    private String secretCode;
+    private final String secretCode;
 }
