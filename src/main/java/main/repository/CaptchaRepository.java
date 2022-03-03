@@ -22,7 +22,7 @@ public interface CaptchaRepository extends JpaRepository<CaptchaCode, Integer> {
      * Ищет в таблице Captcha_Codes запись с указанными кодами
      * @param code код каптчи, введённый пользователем
      * @param secretCode идентификационный код каптчи в базе
-     * @return найденную строч
+     * @return количество найденных записей
      */
     @Query("select count(cc) from captcha_codes cc where code = :code and secret_code = :secretCode")
     byte checkCaptcha(String code, String secretCode);
