@@ -22,8 +22,9 @@ public class GlobalSettingService {
      */
     public Map<String, Boolean> getSettings() {
         Map<String, Boolean> settings = new HashMap<>();
-        for (GlobalSetting setting : globalSettingRepository.findAll())
+        for (GlobalSetting setting : globalSettingRepository.findAll()) {
             settings.put(setting.getCode(), setting.getValue().equals("YES"));
+        }
         return settings;
     }
 }

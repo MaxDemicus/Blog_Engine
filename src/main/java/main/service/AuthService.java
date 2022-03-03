@@ -35,8 +35,9 @@ public class AuthService {
      * @return true и информация о текущем пользователе, если он авторизован, и false, если нет
      */
     public Map<String, Object> check() {
-        if (true) // пока не реализована авторизация
+        if (true) { // пока не реализована авторизация
             return Map.of("result", false);
+        }
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("result", true);
         UserResponse user = new UserResponse(576, "Дмитрий Петров", "/avatars/ab/cd/ef/52461.jpg", "perov@petroff.ru", true, 56, true);// заглушка
@@ -78,20 +79,25 @@ public class AuthService {
         if (errors.isEmpty()) {
             userRepository.save(new User(user));
             return Map.of("result", true);
-        } else
+        } else {
             return Map.of("result", false, "errors", errors);
+        }
     }
 
     private Map<String, String> checkRegisterRequest(RegisterRequest user){
         Map<String, String> errors = new HashMap<>();
-        if (userRepository.countByEmail(user.getEMail()) > 0)
+        if (userRepository.countByEmail(user.getEMail()) > 0) {
             errors.put("email", "Этот e-mail уже зарегистрирован");
-        if (!user.getName().matches("\\w+"))
+        }
+        if (!user.getName().matches("\\w+")) {
             errors.put("name", "Имя указано неверно");
-        if (user.getPassword().length() < 6)
+        }
+        if (user.getPassword().length() < 6) {
             errors.put("password", "Пароль короче 6-ти символов");
-        if (captchaRepository.checkCaptcha(user.getCaptcha(), user.getCaptchaSecret()) == 0)
+        }
+        if (captchaRepository.checkCaptcha(user.getCaptcha(), user.getCaptchaSecret()) == 0) {
             errors.put("captcha", "Код с картинки введён неверно");
+        }
         return errors;
     }
 }

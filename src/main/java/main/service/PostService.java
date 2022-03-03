@@ -129,8 +129,9 @@ public class PostService {
         if (post != null) {
             increaseViewCount(post);
             return ResponseEntity.ok(new PostFullResponse(post));
-        } else
+        } else {
             return ResponseEntity.notFound().build();
+        }
     }
 
     private void increaseViewCount(Post post){
@@ -138,8 +139,9 @@ public class PostService {
         boolean userAuthorized = (boolean) auth.get("result");
         if (userAuthorized){
             UserResponse user = (UserResponse) auth.get("user");
-            if (user.isModeration() || user.getId() == post.getUser().getId())
+            if (user.isModeration() || user.getId() == post.getUser().getId()) {
                 return;
+            }
         }
         postRepository.increaseViewCount(post.getId());
         post.setViewCount(post.getViewCount() + 1);
@@ -171,8 +173,9 @@ public class PostService {
      * </ul>
      */
     public Map<String, Object> getCalendar(String year){
-        if (year == null)
+        if (year == null) {
             year = String.valueOf(LocalDate.now().getYear());
+        }
         Map<String, Object> counts = new HashMap<>();
         for (Tuple tuple : postRepository.getCalendar(year)){
             counts.put(String.valueOf(tuple.get("date")), tuple.get("count"));
