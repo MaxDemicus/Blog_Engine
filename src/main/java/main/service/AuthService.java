@@ -33,6 +33,7 @@ public class AuthService {
 
     /**
      * Возвращает информацию о текущем авторизованном пользователе, если он авторизован
+     *
      * @return true и информация о текущем пользователе, если он авторизован, и false, если нет
      */
     public Map<String, Object> check() {
@@ -49,6 +50,7 @@ public class AuthService {
     /**
      * Генерирует коды капчи, - отображаемый и секретный, - сохраняет их в базу данных.
      * Также метод удаляет устаревшие капчи из базы.
+     *
      * @return возвращает Map с двумя ключами:
      * секретный код secret
      * и изображение размером 100х35 с отображённым на ней основным кодом капчи image в виде строки формата base64
@@ -85,9 +87,9 @@ public class AuthService {
         }
     }
 
-    private Map<String, String> checkRegisterRequest(RegisterRequest user){
+    private Map<String, String> checkRegisterRequest(RegisterRequest user) {
         Map<String, String> errors = new HashMap<>();
-        if (userRepository.countByEmail(user.getEMail()) > 0) {
+        if (userRepository.findByEmail(user.getEMail()).isPresent()) {
             errors.put("email", "Этот e-mail уже зарегистрирован");
         }
         if (!user.getName().matches("\\w+")) {

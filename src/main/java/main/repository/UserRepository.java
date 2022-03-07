@@ -2,17 +2,17 @@ package main.repository;
 
 import main.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
 
     /**
-     * Находит количество пользователей с указанной электронной почтой
+     * Находит пользователя с указанной электронной почтой
      * @param eMail адрес электронной почты
-     * @return количество пользователей
+     * @return пользователь
      */
-    @Query("select count(u) from users u where email = :eMail")
-    byte countByEmail(String eMail);
+    Optional<User> findByEmail(String eMail);
 }

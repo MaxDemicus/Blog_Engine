@@ -1,7 +1,7 @@
 insert into users (code, email, is_moderator, name, password, photo, reg_time)
-values ('code1', 'email1@mail.ru', 1, 'name1', 'password1', 'photo1', '2019-08-01 07:07:07'),
-(NULL, 'email2@mail.ru', 1, 'name2', 'password2', 'photo2', '2010-04-10 08:15:00'),
-('code3', 'email3@mail.ru', 0, 'name3', 'password3', NULL, '2021-01-01 00:00:00');
+values ('code1', 'email1@mail.ru', 1, 'name1', '$2a$12$w3FAazMc7Pe0iPbdZKHrfuo13mq1VfN6Hbb3eF4K5V0wkyKUaQRpG', 'photo1', '2019-08-01 07:07:07'),
+(NULL, 'email2@mail.ru', 1, 'name2', '$2a$12$shsWMGAcNIwQGXOWDcU3meZ3RrUT4op2AD0SpVyWQxS3Klsaj/hYi', 'photo2', '2010-04-10 08:15:00'),
+('code3', 'email3@mail.ru', 0, 'name3', '$2a$12$wXznalCWRFQaRJvaNFKQy.Cm1D.aR0sFR2mpGQRT9wjz2JTGiXnbS', NULL, '2021-01-01 00:00:00');
 
 insert into posts (is_active, moderation_status, text, time, title, view_count, moderator_id, user_id)
 values (1, 'NEW',  'text1', '2013-12-07 12:42:06', 'title1', 2, NULL, 3),

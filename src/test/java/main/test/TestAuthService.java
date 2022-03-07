@@ -65,7 +65,7 @@ public class TestAuthService {
         //Проверка правильных данных
         testRequest = new RegisterRequest("test_mail@mail.ru", "password", "name", "code", "secret");
         response = authService.register(testRequest);
-        assertEquals(1, userRepository.countByEmail("test_mail@mail.ru"), "Пользователь не добавлен в базу");
+        assertTrue(userRepository.findByEmail("test_mail@mail.ru").isPresent(), "Пользователь не добавлен в базу");
         assertThat(response).as("Формат ответа не верный").containsOnly(entry("result", true));
     }
 
