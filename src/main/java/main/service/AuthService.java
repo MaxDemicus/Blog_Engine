@@ -6,16 +6,22 @@ import main.model.CaptchaCode;
 import main.model.User;
 import main.repository.CaptchaRepository;
 import main.repository.UserRepository;
+import main.request.LoginRequest;
 import main.request.RegisterRequest;
+import main.response.LoginResponse;
 import main.response.UserResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class AuthService {
@@ -25,10 +31,12 @@ public class AuthService {
 
     private final CaptchaRepository captchaRepository;
     private final UserRepository userRepository;
+    private final AuthenticationManager authenticationManager;
 
-    public AuthService(CaptchaRepository captchaRepository, UserRepository userRepository) {
+    public AuthService(CaptchaRepository captchaRepository, UserRepository userRepository, AuthenticationManager authenticationManager) {
         this.captchaRepository = captchaRepository;
         this.userRepository = userRepository;
+        this.authenticationManager = authenticationManager;
     }
 
     /**
@@ -36,15 +44,51 @@ public class AuthService {
      *
      * @return true и информация о текущем пользователе, если он авторизован, и false, если нет
      */
-    public Map<String, Object> check() {
-        if (true) { // пока не реализована авторизация
-            return Map.of("result", false);
+    public ResponseEntity<LoginResponse> check() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        LoginResponse response = new LoginResponse();
+        if (authentication != null) {
+            response = getLoginResponse(authentication.getName());
         }
-        Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("result", true);
-        UserResponse user = new UserResponse(576, "Дмитрий Петров", "/avatars/ab/cd/ef/52461.jpg", "perov@petroff.ru", true, 56, true);// заглушка
-        responseBody.put("user", user);
-        return responseBody;
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Проверяет введенные данные и производит авторизацию пользователя, если введенные данные верны
+     *
+     * @param request email и пароль
+     * @return информацию о пользователе, если он авторизован и false, если не авторизован
+     */
+    public ResponseEntity<LoginResponse> login(LoginRequest request) {
+        try {
+            Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEMail(), request.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        } catch (AuthenticationException e) {
+            return ResponseEntity.ok(new LoginResponse());
+        }
+        return ResponseEntity.ok(getLoginResponse(request.getEMail()));
+    }
+
+    public ResponseEntity<LoginResponse> logout() {
+        SecurityContextHolder.getContext().setAuthentication(null);
+        LoginResponse response = new LoginResponse();
+        response.setResult(true);
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        if (auth != null) {
+//            new SecurityContextLogoutHandler().logout(null, ResponseEntity.ok(response), auth);
+//        }
+        return ResponseEntity.ok(response);
+    }
+
+    private LoginResponse getLoginResponse(String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        LoginResponse response = new LoginResponse();
+        if (user.isPresent()) {
+            response.setResult(true);
+            UserResponse userResponse = new UserResponse(user.get());
+            response.setUser(userResponse);
+        }
+        return response;
     }
 
     /**
@@ -80,7 +124,7 @@ public class AuthService {
     public Map<String, Object> register(RegisterRequest user) {
         Map<String, String> errors = checkRegisterRequest(user);
         if (errors.isEmpty()) {
-            userRepository.save(new User(user));
+            userRepository.save(User.from(user));
             return Map.of("result", true);
         } else {
             return Map.of("result", false, "errors", errors);

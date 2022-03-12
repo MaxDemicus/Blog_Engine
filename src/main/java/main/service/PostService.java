@@ -2,6 +2,7 @@ package main.service;
 
 import main.model.Post;
 import main.repository.PostRepository;
+import main.response.LoginResponse;
 import main.response.PostAnnounceResponse;
 import main.response.PostFullResponse;
 import main.response.UserResponse;
@@ -135,10 +136,9 @@ public class PostService {
     }
 
     private void increaseViewCount(Post post){
-        Map<String, Object> auth = authService.check();
-        boolean userAuthorized = (boolean) auth.get("result");
-        if (userAuthorized){
-            UserResponse user = (UserResponse) auth.get("user");
+        LoginResponse auth = authService.check().getBody();
+        if (auth.isResult()){
+            UserResponse user = auth.getUser();
             if (user.isModeration() || user.getId() == post.getUser().getId()) {
                 return;
             }

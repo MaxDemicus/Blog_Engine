@@ -3,7 +3,9 @@ package main.model;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import main.enums.Role;
 import main.request.RegisterRequest;
+import main.config.SecurityConfig;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -15,12 +17,14 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class User {
 
-    public User(RegisterRequest user) {
-        isModerator = 0;
-        regTime = new Timestamp(System.currentTimeMillis());
-        name = user.getName();
-        email = user.getEMail();
-        password = user.getPassword();
+    public static User from(RegisterRequest request) {
+        User user = new User();
+        user.isModerator = 0;
+        user.regTime = new Timestamp(System.currentTimeMillis());
+        user.name = request.getName();
+        user.email = request.getEMail();
+        user.password = SecurityConfig.encoder.encode(request.getPassword());
+        return user;
     }
 
     @Id
@@ -60,4 +64,8 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<PostComment> comments;
+
+    public Role getRole(){
+        return isModerator == 1 ? Role.MODERATOR : Role.USER;
+    }
 }
