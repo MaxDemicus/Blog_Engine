@@ -2,6 +2,7 @@ package main.service;
 
 import main.model.Post;
 import main.repository.PostRepository;
+import main.response.LoginResponse;
 import main.response.PostAnnounceResponse;
 import main.response.PostFullResponse;
 import main.response.UserResponse;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Tuple;
@@ -135,10 +137,9 @@ public class PostService {
     }
 
     private void increaseViewCount(Post post){
-        Map<String, Object> auth = authService.check();
-        boolean userAuthorized = (boolean) auth.get("result");
-        if (userAuthorized){
-            UserResponse user = (UserResponse) auth.get("user");
+        LoginResponse auth = authService.check().getBody();
+        if (auth.isResult()){
+            UserResponse user = auth.getUser();
             if (user.isModeration() || user.getId() == post.getUser().getId()) {
                 return;
             }
@@ -172,6 +173,7 @@ public class PostService {
      * <li> ключ 'posts' - количества публикаций на каждую дату года
      * </ul>
      */
+    @PreAuthorize("hasAuthority('WRITE')")
     public Map<String, Object> getCalendar(String year){
         if (year == null) {
             year = String.valueOf(LocalDate.now().getYear());

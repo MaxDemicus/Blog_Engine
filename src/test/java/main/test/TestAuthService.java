@@ -3,17 +3,21 @@ package main.test;
 import main.model.CaptchaCode;
 import main.repository.CaptchaRepository;
 import main.repository.UserRepository;
+import main.request.LoginRequest;
 import main.request.RegisterRequest;
+import main.response.LoginResponse;
 import main.service.AuthService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 
 import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
@@ -69,5 +73,27 @@ public class TestAuthService {
         assertThat(response).as("Формат ответа не верный").containsOnly(entry("result", true));
     }
 
+    @DisplayName("Авторизация")
+    @Test
+    @Transactional
+    void testLoginCheckLogout() {
+        ResponseEntity<LoginResponse> response = authService.check();
+        assertFalse(response.getBody().isResult());
+
+        response = authService.login(new LoginRequest("wrong@mail.ru", "password"));
+        assertFalse(response.getBody().isResult());
+
+        response = authService.login(new LoginRequest("email1@mail.ru", "password1"));
+        assertTrue(response.getBody().isResult());
+        assertNotNull(response.getBody().getUser());
+
+        response = authService.check();
+        assertTrue(response.getBody().isResult());
+        assertNotNull(response.getBody().getUser());
+
+        authService.logout();
+        response = authService.check();
+        assertFalse(response.getBody().isResult());
+    }
 
 }
