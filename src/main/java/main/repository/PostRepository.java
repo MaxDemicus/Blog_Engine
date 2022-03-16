@@ -18,6 +18,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     /**
      * Возвращает активные посты для главной страницы и подразделов
+     *
      * @param page объект PаgeRequest, задающий пагинацию и метод сортировки
      * @return список постов
      */
@@ -26,7 +27,8 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     /**
      * Возвращает посты, соответствующие поисковому запросу.
-     * @param page объект PаgeRequest, задающий пагинацию и метод сортировки
+     *
+     * @param page  объект PаgeRequest, задающий пагинацию и метод сортировки
      * @param query посиковый запрос
      * @return список постов
      */
@@ -35,6 +37,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     /**
      * Выводит посты за указанную дату
+     *
      * @param page объект PаgeRequest, задающий пагинацию
      * @param date поисковый запрос
      * @return список постов
@@ -44,8 +47,9 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     /**
      * Выводит посты, привязанные к указанному тегу
+     *
      * @param page объект PаgeRequest, задающий пагинацию
-     * @param tag запрошенный тег
+     * @param tag  запрошенный тег
      * @return список постов
      */
     @Query(value = "select p.*" + activePostsAndTagsConditions + " and t.name = ?1", nativeQuery = true)
@@ -53,13 +57,23 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     /**
      * Возвращает общее количество активных постов
+     *
      * @return количество постов
      */
     @Query(value = "select count(*)" + activePostsConditions, nativeQuery = true)
     int countActivePosts();
 
     /**
+     * Возвращает количество постов, требующих модерации
+     *
+     * @return количество постов
+     */
+    @Query(value = "select count(*) from posts where moderation_status = 'NEW' and moderator_id is null", nativeQuery = true)
+    int countModeration();
+
+    /**
      * Возвращает количество активных постов, соответствующих поисковому запросу
+     *
      * @param query поисковый запрос
      * @return количество постов
      */
@@ -68,6 +82,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     /**
      * Возвращает количество активных постов за указанную дату
+     *
      * @param date поисковый запрос
      * @return количество постов
      */
@@ -76,6 +91,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     /**
      * Возвращает количество постов, привязанных к определённому тегу
+     *
      * @param tag запрошенный тег
      * @return количество постов
      */
@@ -84,6 +100,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     /**
      * Возвращает года, за которые есть хотя бы одна активная публикация.
+     *
      * @return Список годов в порядке возрастания
      */
     @Query(value = "select year(time) as year" + activePostsConditions + " group by year order by year", nativeQuery = true)
@@ -91,6 +108,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
 
     /**
      * Возвращает количества публикаций на каждую дату переданного в параметре year года
+     *
      * @param year год
      * @return список кортежей (класс {@link Tuple}) формата 'дата - количеств публикаций'
      */

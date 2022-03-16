@@ -20,7 +20,7 @@ public class ApiAuthController {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<LoginResponse> check(){
+    public LoginResponse check(){
         return authService.check();
     }
 
@@ -35,7 +35,7 @@ public class ApiAuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request){
+    public LoginResponse login(@RequestBody LoginRequest request){
         return authService.login(request);
     }
 

@@ -5,6 +5,7 @@ import com.github.cage.GCage;
 import main.model.CaptchaCode;
 import main.model.User;
 import main.repository.CaptchaRepository;
+import main.repository.PostRepository;
 import main.repository.UserRepository;
 import main.request.LoginRequest;
 import main.request.RegisterRequest;
@@ -32,11 +33,13 @@ public class AuthService {
     private final CaptchaRepository captchaRepository;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
+    private final PostRepository postRepository;
 
-    public AuthService(CaptchaRepository captchaRepository, UserRepository userRepository, AuthenticationManager authenticationManager) {
+    public AuthService(CaptchaRepository captchaRepository, UserRepository userRepository, AuthenticationManager authenticationManager, PostRepository postRepository) {
         this.captchaRepository = captchaRepository;
         this.userRepository = userRepository;
         this.authenticationManager = authenticationManager;
+        this.postRepository = postRepository;
     }
 
     /**
@@ -44,13 +47,13 @@ public class AuthService {
      *
      * @return true и информация о текущем пользователе, если он авторизован, и false, если нет
      */
-    public ResponseEntity<LoginResponse> check() {
+    public LoginResponse check() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         LoginResponse response = new LoginResponse();
         if (authentication != null) {
             response = getLoginResponse(authentication.getName());
         }
-        return ResponseEntity.ok(response);
+        return response;
     }
 
     /**
@@ -59,14 +62,14 @@ public class AuthService {
      * @param request email и пароль
      * @return информацию о пользователе, если он авторизован и false, если не авторизован
      */
-    public ResponseEntity<LoginResponse> login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         try {
             Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEMail(), request.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(auth);
         } catch (AuthenticationException e) {
-            return ResponseEntity.ok(new LoginResponse());
+            return new LoginResponse();
         }
-        return ResponseEntity.ok(getLoginResponse(request.getEMail()));
+        return getLoginResponse(request.getEMail());
     }
 
     public ResponseEntity<LoginResponse> logout() {
@@ -86,6 +89,9 @@ public class AuthService {
         if (user.isPresent()) {
             response.setResult(true);
             UserResponse userResponse = new UserResponse(user.get());
+            if (userResponse.isModeration()) {
+                userResponse.setModerationCount(postRepository.countModeration());
+            }
             response.setUser(userResponse);
         }
         return response;

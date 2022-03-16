@@ -1,14 +1,13 @@
 package main.response;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import main.model.User;
 
 @Getter
-@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserResponse {
 
     public UserResponse(User user) {
@@ -18,14 +17,14 @@ public class UserResponse {
         email = user.getEmail();
         moderation = user.getIsModerator() != 0;
         settings = moderation;
-        moderationCount = 0;
     }
 
-    int id;
-    String name;
-    String photo;
-    String email;
-    boolean moderation;
+    final int id;
+    final String name;
+    final String photo;
+    final String email;
+    final boolean moderation;
+    @Setter
     int moderationCount;
-    boolean settings;
+    final boolean settings;
 }
