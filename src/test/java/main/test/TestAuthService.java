@@ -77,23 +77,23 @@ public class TestAuthService {
     @Test
     @Transactional
     void testLoginCheckLogout() {
-        ResponseEntity<LoginResponse> response = authService.check();
-        assertFalse(response.getBody().isResult());
+        LoginResponse response = authService.check();
+        assertFalse(response.isResult());
 
         response = authService.login(new LoginRequest("wrong@mail.ru", "password"));
-        assertFalse(response.getBody().isResult());
+        assertFalse(response.isResult());
 
         response = authService.login(new LoginRequest("email1@mail.ru", "password1"));
-        assertTrue(response.getBody().isResult());
-        assertNotNull(response.getBody().getUser());
+        assertTrue(response.isResult());
+        assertNotNull(response.getUser());
 
         response = authService.check();
-        assertTrue(response.getBody().isResult());
-        assertNotNull(response.getBody().getUser());
+        assertTrue(response.isResult());
+        assertNotNull(response.getUser());
 
         authService.logout();
         response = authService.check();
-        assertFalse(response.getBody().isResult());
+        assertFalse(response.isResult());
     }
 
 }

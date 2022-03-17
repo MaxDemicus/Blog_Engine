@@ -4,7 +4,6 @@ import main.request.LoginRequest;
 import main.request.RegisterRequest;
 import main.response.LoginResponse;
 import main.service.AuthService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -40,7 +39,7 @@ public class ApiAuthController {
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<LoginResponse> logout(){
+    public LoginResponse logout(){
         return authService.logout();
     }
 }

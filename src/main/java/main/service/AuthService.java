@@ -12,13 +12,11 @@ import main.request.RegisterRequest;
 import main.response.LoginResponse;
 import main.response.UserResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -72,15 +70,14 @@ public class AuthService {
         return getLoginResponse(request.getEMail());
     }
 
-    public ResponseEntity<LoginResponse> logout() {
+    /**
+     * Разлогинивает пользователя: удаляет идентификатор его сессии из списка авторизованных
+     *
+     * @return {"result": true}
+     */
+    public LoginResponse logout() {
         SecurityContextHolder.getContext().setAuthentication(null);
-        LoginResponse response = new LoginResponse();
-        response.setResult(true);
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        if (auth != null) {
-//            new SecurityContextLogoutHandler().logout(null, ResponseEntity.ok(response), auth);
-//        }
-        return ResponseEntity.ok(response);
+        return new LoginResponse(true);
     }
 
     private LoginResponse getLoginResponse(String email) {
