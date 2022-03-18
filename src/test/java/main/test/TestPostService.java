@@ -1,7 +1,9 @@
 package main.test;
 
-import main.response.PostFullResponse;
-import main.response.PostResponse;
+import main.response.CalendarResponse;
+import main.response.post.InnerPostFullResponse;
+import main.response.post.InnerPostResponse;
+import main.response.post.PostResponse;
 import main.service.PostService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,9 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigInteger;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.*;
@@ -26,7 +26,7 @@ public class TestPostService {
     @Autowired
     PostService postService;
 
-    private Map<String, Object> response;
+    private PostResponse response;
 
     @DisplayName("Список активных постов")
     @Test
@@ -71,9 +71,9 @@ public class TestPostService {
     @Transactional
     void testGetPostById(){
         //поиск существующего поста
-        ResponseEntity<PostFullResponse> response = postService.getPostById(2);
+        ResponseEntity<InnerPostFullResponse> response = postService.getPostById(2);
         assertEquals(200, response.getStatusCodeValue(), "неверный код ошибки");
-        PostResponse post = response.getBody();
+        InnerPostResponse post = response.getBody();
         assertNotNull(post, "пост не найден");
         assertEquals("title2", post.getTitle(), "найден неверный пост");
         assertEquals(4, post.getViewCount(), "количество просмотров некорректно");
@@ -87,17 +87,14 @@ public class TestPostService {
     @Test
     @Transactional
     void testGetCalendar(){
-        Map<String, Object> calendar = postService.getCalendar("2022");
-        List<Integer> years = (List<Integer>) calendar.get("years");
-        assertThat(years).containsOnly(2008, 2009, 2013, 2017, 2018, 2020, 2022);
-        Map<String, Object> posts = (Map<String, Object>) calendar.get("posts");
-        assertThat(posts).containsOnly(entry("2022-01-07", BigInteger.valueOf(2)), entry("2022-02-01", BigInteger.valueOf(1)));
+        CalendarResponse calendar = postService.getCalendar("2022");
+        assertThat(calendar.getYears()).containsOnly(2008, 2009, 2013, 2017, 2018, 2020, 2022);
+        assertThat(calendar.getPosts()).containsOnly(entry("2022-01-07", 2), entry("2022-02-01", 1));
     }
 
     private void check(int expectedCount, String... expectedTitles){
-        assertThat(response).as("Неверное количество результатов").contains(entry("count", expectedCount));
-        List<PostResponse> posts = (List<PostResponse>) response.get("posts");
-        List<String> titles = posts.stream().map(PostResponse::getTitle).collect(Collectors.toList());
+        assertEquals(expectedCount, response.getCount(), "Неверное количество результатов");
+        List<String> titles = response.getPosts().stream().map(InnerPostResponse::getTitle).collect(Collectors.toList());
         assertThat(titles).as("Неверный результат запроса").containsExactly(expectedTitles);
     }
 }

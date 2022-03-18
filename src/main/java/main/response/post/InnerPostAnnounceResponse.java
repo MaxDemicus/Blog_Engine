@@ -1,4 +1,4 @@
-package main.response;
+package main.response.post;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -7,9 +7,9 @@ import main.model.Post;
 
 @Getter
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-public class PostAnnounceResponse extends PostResponse{
+public class InnerPostAnnounceResponse extends InnerPostResponse {
 
-    public PostAnnounceResponse(Post post) {
+    public InnerPostAnnounceResponse(Post post) {
         super(post);
         announce = getAnnounce(post.getText());
         commentCount = post.getComments().size();

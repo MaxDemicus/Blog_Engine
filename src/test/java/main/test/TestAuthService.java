@@ -43,7 +43,7 @@ public class TestAuthService {
     @Transactional
     void testGetCaptchaCode(){
         em.createNativeQuery("insert into captcha_codes (code, secret_code, time) values ('obsolete_code', 'secret', '1970-01-01 00:00:00')").executeUpdate();
-        String secret = authService.getCaptchaCode().get("secret");
+        String secret = authService.getCaptchaCode().getSecret();
         long savedCode = (long) em.createQuery("select count(cc) from captcha_codes cc where secret_code = :secret").setParameter("secret", secret).getSingleResult();
         assertEquals(1, savedCode, "новая каптча не записалась в базу");
         byte obsolete = captchaRepository.checkCaptcha("obsolete_code", "secret");
@@ -58,19 +58,16 @@ public class TestAuthService {
 
         //Проверка неправильных данных
         RegisterRequest testRequest = new RegisterRequest("email1@mail.ru", "pass", "имя", "wrong_code", "secret");
-        Map<String, Object> response = authService.register(testRequest);
-        assertThat(response).contains(entry("result", false));
-        assertThat(response).as("ошибки вводных данных не обнаружены").containsKey("errors");
-        if (response.containsKey("errors")) {
-            Map<String, String> errors = (Map<String, String>) response.get("errors");
-            assertThat(errors).as("ошибки вводных данных не обнаружены").containsKeys("email", "name", "password", "captcha");
-        }
+        LoginResponse response = authService.register(testRequest);
+        assertFalse(response.isResult());
+        assertThat(response.getErrors()).as("ошибки вводных данных не обнаружены").containsKeys("email", "name", "password", "captcha");
 
         //Проверка правильных данных
         testRequest = new RegisterRequest("test_mail@mail.ru", "password", "name", "code", "secret");
         response = authService.register(testRequest);
         assertTrue(userRepository.findByEmail("test_mail@mail.ru").isPresent(), "Пользователь не добавлен в базу");
-        assertThat(response).as("Формат ответа не верный").containsOnly(entry("result", true));
+        assertTrue(response.isResult());
+        assertNull(response.getErrors(), "Формат ответа не верный");
     }
 
     @DisplayName("Авторизация")

@@ -1,4 +1,4 @@
-package main.response;
+package main.response.post;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import main.model.Post;
 
 @Getter
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-public abstract class PostResponse {
+public abstract class InnerPostResponse {
     int id;
     long timestamp;
     User user;
@@ -17,7 +17,7 @@ public abstract class PostResponse {
     int dislikeCount;
     int viewCount;
 
-    public PostResponse(Post post) {
+    public InnerPostResponse(Post post) {
         id = post.getId();
         timestamp = post.getTime().getTime() / 1000;
         user = new User(post.getUser().getId(), post.getUser().getName());

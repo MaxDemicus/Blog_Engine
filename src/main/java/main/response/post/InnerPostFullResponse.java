@@ -1,4 +1,4 @@
-package main.response;
+package main.response.post;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 
 @Getter
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-public class PostFullResponse extends PostResponse {
+public class InnerPostFullResponse extends InnerPostResponse {
 
-    public PostFullResponse(Post post) {
+    public InnerPostFullResponse(Post post) {
         super(post);
         active = post.getIsActive() == 1 && post.getModerationStatus() == Status.ACCEPTED && !post.getTime().after(new Date());
         text = post.getText();

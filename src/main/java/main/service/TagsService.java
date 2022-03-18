@@ -24,20 +24,20 @@ public class TagsService {
      * и их относительный нормированный вес от 0 до 1, соответствующий частоте встречаемости.
      * Если query не задан, возвращаются все теги.
      * @param query - строка для поиска
-     * @return Map, значение в котором - список объектов {@link TagResponse}: имя тега и его нормированный вес
+     * @return {@link TagResponse}: список тегов и их нормированный вес
      */
-    public Map<String, List<TagResponse>> getTags(String query){
+    public TagResponse getTags(String query){
         List<Tuple> tags = tagRepository.getTags(query);
         float maxCount = 0;
         for (Tuple tag : tags) {
             maxCount = Math.max(maxCount, tag.get("count", BigInteger.class).intValue());
         }
-        List<TagResponse> responses = new ArrayList<>();
+        TagResponse response = new TagResponse();
         for (Tuple tag : tags) {
             String name = tag.get("tag", String.class);
             float weight = tag.get("count", BigInteger.class).intValue() / maxCount;
-            responses.add(new TagResponse(name, weight));
+            response.addTag(name, weight);
         }
-        return Map.of("tags", responses);
+        return response;
     }
 }

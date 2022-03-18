@@ -9,8 +9,8 @@ import main.repository.PostRepository;
 import main.repository.UserRepository;
 import main.request.LoginRequest;
 import main.request.RegisterRequest;
+import main.response.CaptchaResponse;
 import main.response.LoginResponse;
-import main.response.UserResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -47,11 +47,10 @@ public class AuthService {
      */
     public LoginResponse check() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        LoginResponse response = new LoginResponse();
         if (authentication != null) {
-            response = getLoginResponse(authentication.getName());
+            return getLoginResponse(authentication.getName());
         }
-        return response;
+        return new LoginResponse(false);
     }
 
     /**
@@ -65,7 +64,7 @@ public class AuthService {
             Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEMail(), request.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(auth);
         } catch (AuthenticationException e) {
-            return new LoginResponse();
+            return new LoginResponse(false);
         }
         return getLoginResponse(request.getEMail());
     }
@@ -82,28 +81,26 @@ public class AuthService {
 
     private LoginResponse getLoginResponse(String email) {
         Optional<User> user = userRepository.findByEmail(email);
-        LoginResponse response = new LoginResponse();
         if (user.isPresent()) {
-            response.setResult(true);
-            UserResponse userResponse = new UserResponse(user.get());
-            if (userResponse.isModeration()) {
-                userResponse.setModerationCount(postRepository.countModeration());
+            LoginResponse response = LoginResponse.success(user.get());
+            if (response.getUser().isModeration()) {
+                response.getUser().setModerationCount(postRepository.countModeration());
             }
-            response.setUser(userResponse);
+            return response;
         }
-        return response;
+        return new LoginResponse(false);
     }
 
     /**
      * Генерирует коды капчи, - отображаемый и секретный, - сохраняет их в базу данных.
      * Также метод удаляет устаревшие капчи из базы.
      *
-     * @return возвращает Map с двумя ключами:
+     * @return возвращает {@link CaptchaResponse} с двумя полями:
      * секретный код secret
      * и изображение размером 100х35 с отображённым на ней основным кодом капчи image в виде строки формата base64
      */
     @Transactional
-    public Map<String, String> getCaptchaCode() {
+    public CaptchaResponse getCaptchaCode() {
         Cage cage = new GCage();
         String code = cage.getTokenGenerator().next();
         byte[] imageBytes = cage.draw(code);
@@ -111,26 +108,23 @@ public class AuthService {
         String secret = UUID.nameUUIDFromBytes(imageBytes).toString().replaceAll("-", "");
         captchaRepository.save(new CaptchaCode(code, secret));
         captchaRepository.deleteObsolete(captchaObsoletePeriod);
-        Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("secret", secret);
-        responseBody.put("image", "data:image/png;base64, " + image64);
-        return responseBody;
+        return new CaptchaResponse(secret, "data:image/png;base64, " + image64);
     }
 
     /**
      * Создаёт пользователя в базе данных, если введённые данные верны. Если данные неверные -
      * пользователь не создаётся, а метод возвращает соответствующую ошибку.
      *
-     * @param user объект {@link RegisterRequest} с данными пользователя и проверкой каптчи
-     * @return "result": true, если проверка пройдена. Если не пройдена, то "result":false и ключ "errors" с указанием ошибки
+     * @param request объект {@link RegisterRequest} с данными пользователя и проверкой каптчи
+     * @return {"result": true}, если проверка пройдена. Если не пройдена, то "result":false и Map "errors" с указанием ошибок
      */
-    public Map<String, Object> register(RegisterRequest user) {
-        Map<String, String> errors = checkRegisterRequest(user);
+    public LoginResponse register(RegisterRequest request) {
+        Map<String, String> errors = checkRegisterRequest(request);
         if (errors.isEmpty()) {
-            userRepository.save(User.from(user));
-            return Map.of("result", true);
+            userRepository.save(User.from(request));
+            return new LoginResponse(true);
         } else {
-            return Map.of("result", false, "errors", errors);
+            return LoginResponse.registersError(errors);
         }
     }
 

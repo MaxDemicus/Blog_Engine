@@ -1,5 +1,6 @@
 package main.controller;
 
+import main.response.CalendarResponse;
 import main.response.InitResponse;
 import main.response.TagResponse;
 import main.service.GlobalSettingService;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -30,22 +30,22 @@ public class ApiGeneralController {
     }
 
     @GetMapping("/init")
-    private InitResponse init(){
+    public InitResponse init(){
         return initResponse;
     }
 
     @GetMapping("/settings")
-    private Map<String, Boolean> getSettings(){
+    public Map<String, Boolean> getSettings(){
         return globalSettingService.getSettings();
     }
 
     @GetMapping("/tag")
-    private Map<String, List<TagResponse>> getTags(@RequestParam(defaultValue = "") String query){
+    public TagResponse getTags(@RequestParam(defaultValue = "") String query){
         return tagsService.getTags(query);
     }
 
     @GetMapping("/calendar")
-    private Map<String, Object> getCalendar(@RequestParam(required = false) String year){
+    public CalendarResponse getCalendar(@RequestParam(required = false) String year){
         return postService.getCalendar(year);
     }
 }
