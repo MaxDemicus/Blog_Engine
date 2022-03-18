@@ -1,12 +1,11 @@
 package main.response;
 
 import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import main.model.User;
 
-@Getter
+@Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserResponse {
 
@@ -24,7 +23,6 @@ public class UserResponse {
     final String photo;
     final String email;
     final boolean moderation;
-    @Setter
     int moderationCount;
     final boolean settings;
 }

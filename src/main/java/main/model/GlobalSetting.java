@@ -1,12 +1,12 @@
 package main.model;
 
-import lombok.Getter;
+import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity(name = "global_settings")
-@Getter
+@Data
 public class GlobalSetting {
 
     @Id

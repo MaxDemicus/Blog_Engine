@@ -1,12 +1,10 @@
 package main.response;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 
-@Getter
+@Data
 @EqualsAndHashCode
-@ToString
 public class TagResponse {
 
     public TagResponse(String name, float weight) {

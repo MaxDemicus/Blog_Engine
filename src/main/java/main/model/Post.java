@@ -1,8 +1,6 @@
 package main.model;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import main.enums.Status;
 
 import javax.persistence.*;
@@ -11,13 +9,11 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Entity(name = "posts")
-@Getter
-@Setter
+@Data
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Setter(AccessLevel.NONE)
     private int id;
 
     @NotNull

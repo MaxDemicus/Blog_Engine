@@ -1,7 +1,7 @@
 package main.model;
 
 import lombok.AccessLevel;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import main.enums.Role;
 import main.request.RegisterRequest;
@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Entity(name = "users")
-@Getter
+@Data
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class User {
 

@@ -1,13 +1,13 @@
 package main.model;
 
-import lombok.Getter;
+import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Entity(name = "tags")
-@Getter
+@Data
 public class Tag {
 
     @Id

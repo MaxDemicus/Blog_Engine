@@ -1,13 +1,13 @@
 package main.model;
 
-import lombok.Getter;
+import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 
 @Entity(name = "post_comments")
-@Getter
+@Data
 public class PostComment {
 
     @Id
