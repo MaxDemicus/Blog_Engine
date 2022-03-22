@@ -1,9 +1,11 @@
 package main.test;
 
+import main.request.LoginRequest;
 import main.response.CalendarResponse;
 import main.response.post.InnerPostFullResponse;
 import main.response.post.InnerPostResponse;
 import main.response.post.PostResponse;
+import main.service.AuthService;
 import main.service.PostService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,8 @@ public class TestPostService {
 
     @Autowired
     PostService postService;
+    @Autowired
+    AuthService authService;
 
     private PostResponse response;
 
@@ -64,6 +68,21 @@ public class TestPostService {
     void testGetPostByTag(){
         response = postService.getPostByTag(0, 10,"tag4 для постов 4 и 5");
         check(2, "title4", "title5");
+    }
+
+    @DisplayName("Список постов текущего пользователя")
+    @Test
+    @Transactional
+    void testGetMyPosts(){
+        authService.login(new LoginRequest("email3@mail.ru", "password3"));
+        response = postService.getMyPosts(0, 10, "inactive");
+        check(1, "title13");
+        response = postService.getMyPosts(0, 10, "pending");
+        check(1, "title1");
+        response = postService.getMyPosts(0, 10, "declined");
+        check(1, "title14");
+        response = postService.getMyPosts(0, 10, "published");
+        check(6, "title2", "title4", "title6", "title8", "title9", "title12");
     }
 
     @DisplayName("Поиск поста по id")

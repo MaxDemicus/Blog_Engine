@@ -34,15 +34,16 @@ public class PostService {
      * Возвращает список активных постов со всей сопутствующей информацией для главной страницы и подразделов
      * "Новые", "Самые обсуждаемые", "Лучшие" и "Старые". Метод выводит посты, отсортированные в
      * соответствии с параметром mode.
+     *
      * @param offset номер страницы, 0 по умолчанию
-     * @param limit количество постов на странице, 10 по умолчанию
-     * @param mode метод сортировки:
-     *             <ul>
-     *             <li>recent - по дате публикации, сначала новые (по умолчанию);
-     *             <li>early - по дате публикации, сначала старые;
-     *             <li>popular - по убыванию количества комментариев;
-     *             <li>best - по убыванию количества лайков
-     *             </ul>
+     * @param limit  количество постов на странице, 10 по умолчанию
+     * @param mode   метод сортировки:
+     *               <ul>
+     *               <li>recent - по дате публикации, сначала новые (по умолчанию);
+     *               <li>early - по дате публикации, сначала старые;
+     *               <li>popular - по убыванию количества комментариев;
+     *               <li>best - по убыванию количества лайков
+     *               </ul>
      * @return {@link PostResponse}, в котором:
      * <ul>
      * <li> поле 'count' - общее количество постов, которое доступно по данному запросу с
@@ -60,9 +61,10 @@ public class PostService {
     /**
      * Возвращает посты, соответствующие поисковому запросу. В случае, если запрос
      * пустой или содержит только пробелы, метод должен выводить все посты.
+     *
      * @param offset номер страницы, 0 по умолчанию
-     * @param limit количество постов на странице, 10 по умолчанию
-     * @param query поисковый запорс
+     * @param limit  количество постов на странице, 10 по умолчанию
+     * @param query  поисковый запорс
      * @return {@link PostResponse}, в котором:
      * <ul>
      * <li> поле 'count' - общее количество постов, которое доступно по данному запросу
@@ -78,9 +80,10 @@ public class PostService {
 
     /**
      * Выводит посты за указанную дату, переданную в запросе в параметре date.
+     *
      * @param offset номер страницы, 0 по умолчанию
-     * @param limit количество постов на странице, 10 по умолчанию
-     * @param date поисковый запрос
+     * @param limit  количество постов на странице, 10 по умолчанию
+     * @param date   поисковый запрос
      * @return {@link PostResponse}, в котором:
      * <ul>
      * <li> поле 'count' - общее количество постов, которое доступно по данному запросу
@@ -97,9 +100,10 @@ public class PostService {
     /**
      * Выводит список постов, привязанных к тэгу, который был передан методу в качестве параметра
      * tag
+     *
      * @param offset сдвиг от 0 для постраничного вывода, 0 по умолчанию
-     * @param limit количество постов, которое надо вывести, 10 по умолчанию
-     * @param tag тэг, по которому нужно вывести все посты
+     * @param limit  количество постов, которое надо вывести, 10 по умолчанию
+     * @param tag    тэг, по которому нужно вывести все посты
      * @return {@link PostResponse}, в котором:
      * <ul>
      * <li> поле 'count' - общее количество постов, которое доступно по данному запросу
@@ -113,6 +117,52 @@ public class PostService {
         return getResponse(postCount, posts);
     }
 
+    /**
+     * Выводит список постов, которые создал текущий пользователь
+     *
+     * @param offset сдвиг от 0 для постраничного вывода, 0 по умолчанию
+     * @param limit  количество постов, которое надо вывести, 10 по умолчанию
+     * @param status status - статус модерации:
+     * <ul>
+     * <li> inactive - скрытые, ещё не опубликованы
+     * <li> pending - активные, ожидают утверждения модератором
+     * <li> declined - отклонённые по итогам модерации
+     * <li> published - опубликованные по итогам модерации
+     * </ul>
+     * @return {@link PostResponse}, в котором:
+     * <ul>
+     * <li> поле 'count' - общее количество постов, которое доступно по данному запросу
+     * <li> поле 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link InnerPostAnnounceResponse}
+     * </ul>
+     */
+    public PostResponse getMyPosts(int offset, int limit, String status) {
+        PageRequest page = PageRequest.of(offset, limit);
+        LoginResponse auth = authService.check();
+        if (!auth.isResult()) {
+            return new PostResponse(0, new ArrayList<>());
+        }
+        int id = auth.getUser().getId();
+        byte active = 1;
+        switch (status) {
+            case ("inactive"):
+                active = 0;
+                status = "";
+                break;
+            case ("pending"):
+                status = "NEW";
+                break;
+            case ("declined"):
+                status = "DECLINED";
+                break;
+            case ("published"):
+            default:
+                status = "ACCEPTED";
+        }
+        List<Post> posts = postRepository.findPostsByUser(id, active, status, page);
+        int postCount = postRepository.countPostsByUser(id, active, status);
+        return getResponse(postCount, posts);
+    }
+
     private PostResponse getResponse(int postCount, List<Post> posts) {
         List<InnerPostResponse> responses = posts.stream().map(InnerPostAnnounceResponse::new).collect(Collectors.toList());
         return new PostResponse(postCount, responses);
@@ -121,10 +171,11 @@ public class PostService {
     /**
      * Возвращает данные конкретного поста, в том числе список
      * комментариев и тегов, привязанных к данному посту. Если пост не найден, возвращает код 404 (Документ на найден)
+     *
      * @param id номер поста
      * @return полную информацию о посте в виде объекта {@link InnerPostFullResponse} или код 404, если пост не найден
      */
-    public ResponseEntity<InnerPostFullResponse> getPostById(int id){
+    public ResponseEntity<InnerPostFullResponse> getPostById(int id) {
         Post post = postRepository.findById(id).orElse(null);
         if (post != null) {
             increaseViewCount(post);
@@ -134,9 +185,9 @@ public class PostService {
         }
     }
 
-    private void increaseViewCount(Post post){
+    private void increaseViewCount(Post post) {
         LoginResponse auth = authService.check();
-        if (auth.isResult()){
+        if (auth.isResult()) {
             LoginResponse.UserResponse user = auth.getUser();
             if (user.isModeration() || user.getId() == post.getUser().getId()) {
                 return;
@@ -163,6 +214,7 @@ public class PostService {
     /**
      * Возвращает количества публикаций на каждую дату переданного в параметре year года
      * или текущего года, если параметр year не задан.
+     *
      * @param year - год в виде четырёхзначного числа, если не передан - возвращать за текущий год.
      * @return {@link CalendarResponse}, в котором:
      * <ul>
@@ -171,12 +223,12 @@ public class PostService {
      * <li> поле 'posts' - количества публикаций на каждую дату года
      * </ul>
      */
-    public CalendarResponse getCalendar(String year){
+    public CalendarResponse getCalendar(String year) {
         if (year == null) {
             year = String.valueOf(LocalDate.now().getYear());
         }
         Map<String, Integer> posts = new HashMap<>();
-        for (Tuple tuple : postRepository.getCalendar(year)){
+        for (Tuple tuple : postRepository.getCalendar(year)) {
             String date = String.valueOf(tuple.get("date"));
             int count = ((BigInteger) tuple.get("count")).intValue();
             posts.put(date, count);

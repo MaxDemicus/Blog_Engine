@@ -56,6 +56,16 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     List<Post> findActivePostsByTag(String tag, PageRequest page);
 
     /**
+     * Выводит список постов, которые создал пользователь
+     *
+     * @param userID номер пользователя
+     * @param page объект PаgeRequest, задающий пагинацию
+     * @return список постов
+     */
+    @Query(value = "select * from posts p where user_id = ?1 and is_active = ?2 and moderation_status like %?3%", nativeQuery = true)
+    List<Post> findPostsByUser(int userID, int active, String status, PageRequest page);
+
+    /**
      * Возвращает общее количество активных постов
      *
      * @return количество постов
@@ -97,6 +107,15 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      */
     @Query(value = "select count(*)" + activePostsAndTagsConditions + " and t.name = :tag", nativeQuery = true)
     int countActivePostsByTag(String tag);
+
+    /**
+     * Количество постов, которые создал пользователь
+     *
+     * @param userID номер пользователя
+     * @return количество постов
+     */
+    @Query(value = "select count(*) from posts p where user_id = ?1 and is_active = ?2 and moderation_status like %?3%", nativeQuery = true)
+    int countPostsByUser(int userID, int active, String status);
 
     /**
      * Возвращает года, за которые есть хотя бы одна активная публикация.

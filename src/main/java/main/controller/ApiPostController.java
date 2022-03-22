@@ -4,6 +4,7 @@ import main.response.post.InnerPostFullResponse;
 import main.response.post.PostResponse;
 import main.service.PostService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,5 +40,11 @@ public class ApiPostController {
     @GetMapping("/{ID}")
     public ResponseEntity<InnerPostFullResponse> getPostById(@PathVariable int ID){
         return postService.getPostById(ID);
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasAuthority('WRITE')")
+    public PostResponse getMyPosts(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit, @RequestParam String status) {
+        return postService.getMyPosts(offset, limit, status);
     }
 }
