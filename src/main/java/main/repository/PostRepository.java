@@ -56,14 +56,25 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     List<Post> findActivePostsByTag(String tag, PageRequest page);
 
     /**
-     * Выводит список постов, которые создал пользователь
+     * Выводит список неактивных постов, которые создал пользователь
      *
      * @param userID номер пользователя
      * @param page объект PаgeRequest, задающий пагинацию
      * @return список постов
      */
-    @Query(value = "select * from posts p where user_id = ?1 and is_active = ?2 and moderation_status like %?3%", nativeQuery = true)
-    List<Post> findPostsByUser(int userID, int active, String status, PageRequest page);
+    @Query(value = "select * from posts p where user_id = ?1 and is_active = 0", nativeQuery = true)
+    List<Post> findInactivePostsByUser(int userID, PageRequest page);
+
+    /**
+     * Выводит список активных постов, которые создал пользователь, с определённым статусом модерации
+     *
+     * @param userID номер пользователя
+     * @param status статус модерации: "NEW", "ACCEPTED" или "DECLINED"
+     * @param page объект PаgeRequest, задающий пагинацию
+     * @return список постов
+     */
+    @Query(value = "select * from posts p where user_id = ?1 and is_active = 1 and moderation_status = ?2", nativeQuery = true)
+    List<Post> findPostsByUserAndStatus(int userID, String status, PageRequest page);
 
     /**
      * Возвращает общее количество активных постов
@@ -109,13 +120,23 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     int countActivePostsByTag(String tag);
 
     /**
-     * Количество постов, которые создал пользователь
+     * Количество неактивных постов, которые создал пользователь
      *
      * @param userID номер пользователя
      * @return количество постов
      */
-    @Query(value = "select count(*) from posts p where user_id = ?1 and is_active = ?2 and moderation_status like %?3%", nativeQuery = true)
-    int countPostsByUser(int userID, int active, String status);
+    @Query(value = "select count(*) from posts p where user_id = ?1 and is_active = 0", nativeQuery = true)
+    int countInactivePostsByUser(int userID);
+
+    /**
+     * Количество активных постов, которые создал пользователь с определённым статусом модерации
+     *
+     * @param userID номер пользователя
+     * @param status статус модерации: "NEW", "ACCEPTED" или "DECLINED"
+     * @return количество постов
+     */
+    @Query(value = "select count(*) from posts p where user_id = ?1 and is_active = 1 and moderation_status = ?2", nativeQuery = true)
+    int countPostsByUserAndStatus(int userID, String status);
 
     /**
      * Возвращает года, за которые есть хотя бы одна активная публикация.

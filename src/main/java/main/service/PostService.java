@@ -1,5 +1,6 @@
 package main.service;
 
+import main.enums.PostStatusInRequest;
 import main.model.Post;
 import main.repository.PostRepository;
 import main.response.*;
@@ -137,29 +138,17 @@ public class PostService {
      */
     public PostResponse getMyPosts(int offset, int limit, String status) {
         PageRequest page = PageRequest.of(offset, limit);
-        LoginResponse auth = authService.check();
-        if (!auth.isResult()) {
-            return new PostResponse(0, new ArrayList<>());
+        int id = authService.check().getUser().getId();
+        List<Post> posts;
+        int postCount;
+        if (status.equalsIgnoreCase("inactive")) {
+            posts = postRepository.findInactivePostsByUser(id, page);
+            postCount = postRepository.countInactivePostsByUser(id);
+        } else {
+            String statusInDB = PostStatusInRequest.valueOf(status).getStatusInDB();
+            posts = postRepository.findPostsByUserAndStatus(id, statusInDB, page);
+            postCount = postRepository.countPostsByUserAndStatus(id, statusInDB);
         }
-        int id = auth.getUser().getId();
-        byte active = 1;
-        switch (status) {
-            case ("inactive"):
-                active = 0;
-                status = "";
-                break;
-            case ("pending"):
-                status = "NEW";
-                break;
-            case ("declined"):
-                status = "DECLINED";
-                break;
-            case ("published"):
-            default:
-                status = "ACCEPTED";
-        }
-        List<Post> posts = postRepository.findPostsByUser(id, active, status, page);
-        int postCount = postRepository.countPostsByUser(id, active, status);
         return getResponse(postCount, posts);
     }
 

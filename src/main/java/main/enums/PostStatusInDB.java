@@ -1,6 +1,6 @@
 package main.enums;
 
-public enum Status{
+public enum PostStatusInDB{
     NEW,
     ACCEPTED,
     DECLINED

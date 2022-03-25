@@ -1,7 +1,7 @@
 package main.model;
 
 import lombok.Data;
-import main.enums.Status;
+import main.enums.PostStatusInDB;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -23,7 +23,7 @@ public class Post {
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "moderation_status", columnDefinition = "enum('NEW','ACCEPTED','DECLINED') default 'NEW'")
-    private Status moderationStatus;
+    private PostStatusInDB moderationStatus;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "moderator_id")

@@ -3,7 +3,7 @@ package main.response.post;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import main.enums.Status;
+import main.enums.PostStatusInDB;
 import main.model.Post;
 import main.model.PostComment;
 import main.model.Tag;
@@ -20,7 +20,7 @@ public class InnerPostFullResponse extends InnerPostResponse {
 
     public InnerPostFullResponse(Post post) {
         super(post);
-        active = post.getIsActive() == 1 && post.getModerationStatus() == Status.ACCEPTED && !post.getTime().after(new Date());
+        active = post.getIsActive() == 1 && post.getModerationStatus() == PostStatusInDB.ACCEPTED && !post.getTime().after(new Date());
         text = post.getText();
         comments = post.getComments().stream().map(Comment::new).collect(Collectors.toList());
         tags = post.getTags().stream().map(Tag::getName).collect(Collectors.toList());
