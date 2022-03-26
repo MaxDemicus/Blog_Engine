@@ -1,5 +1,6 @@
 package main.service;
 
+import main.enums.PostStatusInDB;
 import main.enums.PostStatusInRequest;
 import main.model.Post;
 import main.repository.PostRepository;
@@ -148,6 +149,39 @@ public class PostService {
             String statusInDB = PostStatusInRequest.valueOf(status).getStatusInDB();
             posts = postRepository.findPostsByUserAndStatus(id, statusInDB, page);
             postCount = postRepository.countPostsByUserAndStatus(id, statusInDB);
+        }
+        return getResponse(postCount, posts);
+    }
+
+    /**
+     * Выводит все посты, которые требуют модерационных действий (которые нужно утвердить или
+     * отклонить) или над которыми текущим пользователем были совершены модерационные действия
+     *
+     * @param offset сдвиг от 0 для постраничного вывода, 0 по умолчанию
+     * @param limit  количество постов, которое надо вывести, 10 по умолчанию
+     * @param status status - статус модерации:
+     * <ul>
+     * <li> new - новые, необходима модерация
+     * <li> declined - отклонённые текущим пользователем
+     * <li> accepted - утверждённые текущим пользователем
+     * </ul>
+     * @return {@link PostResponse}, в котором:
+     * <ul>
+     * <li> поле 'count' - общее количество постов, которое доступно по данному запросу
+     * <li> поле 'posts' - список публикаций и сопутствующей информации для отображения на одной странице в виде объектов {@link InnerPostAnnounceResponse}
+     * </ul>
+     */
+    public PostResponse getModeratedPosts(int offset, int limit, String status) {
+        PageRequest page = PageRequest.of(offset, limit);
+        List<Post> posts;
+        int postCount;
+        if (status.equalsIgnoreCase(PostStatusInDB.NEW.toString())) {
+            posts = postRepository.findModeration(page);
+            postCount = postRepository.countModeration();
+        } else {
+            int id = authService.check().getUser().getId();
+            posts = postRepository.findPostsByModeratorAndStatus(id, status.toUpperCase(), page);
+            postCount = postRepository.countPostsByModeratorAndStatus(id, status.toUpperCase());
         }
         return getResponse(postCount, posts);
     }

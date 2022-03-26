@@ -85,6 +85,19 @@ public class TestPostService {
         check(6, "title2", "title4", "title6", "title8", "title9", "title12");
     }
 
+    @DisplayName("Список постов, модерированных текущим пользователем")
+    @Test
+    @Transactional
+    void testGetModeratedPost(){
+        authService.login(new LoginRequest("email2@mail.ru", "password2"));
+        response = postService.getModeratedPosts(0, 10, "new");
+        check(1, "title1");
+        response = postService.getModeratedPosts(0, 10, "accepted");
+        check(3, "title4", "title7", "title10");
+        response = postService.getModeratedPosts(0, 10, "declined");
+        check(1, "title14");
+    }
+
     @DisplayName("Поиск поста по id")
     @Test
     @Transactional

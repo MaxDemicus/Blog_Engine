@@ -66,6 +66,14 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     List<Post> findInactivePostsByUser(int userID, PageRequest page);
 
     /**
+     * Выводит список новых постов, для которых требуется модерация
+     * @param page объект PаgeRequest, задающий пагинацию
+     * @return список постов
+     */
+    @Query(value = "select * from posts p where moderation_status = 'NEW' and is_active = 1", nativeQuery = true)
+    List<Post> findModeration(PageRequest page);
+
+    /**
      * Выводит список активных постов, которые создал пользователь, с определённым статусом модерации
      *
      * @param userID номер пользователя
@@ -75,6 +83,17 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      */
     @Query(value = "select * from posts p where user_id = ?1 and is_active = 1 and moderation_status = ?2", nativeQuery = true)
     List<Post> findPostsByUserAndStatus(int userID, String status, PageRequest page);
+
+    /**
+     * Выводит список активных постов, которые данный модератор отклонил или утвердил
+     *
+     * @param moderatorID номер пользователя
+     * @param status статус модерации: "ACCEPTED" или "DECLINED"
+     * @param page объект PаgeRequest, задающий пагинацию
+     * @return список постов
+     */
+    @Query(value = "select * from posts p where moderator_id = ?1 and is_active = 1 and moderation_status = ?2", nativeQuery = true)
+    List<Post> findPostsByModeratorAndStatus(int moderatorID, String status, PageRequest page);
 
     /**
      * Возвращает общее количество активных постов
@@ -89,7 +108,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      *
      * @return количество постов
      */
-    @Query(value = "select count(*) from posts where moderation_status = 'NEW' and moderator_id is null", nativeQuery = true)
+    @Query(value = "select count(*) from posts where moderation_status = 'NEW' and moderator_id is null and is_active = 1", nativeQuery = true)
     int countModeration();
 
     /**
@@ -137,6 +156,16 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      */
     @Query(value = "select count(*) from posts p where user_id = ?1 and is_active = 1 and moderation_status = ?2", nativeQuery = true)
     int countPostsByUserAndStatus(int userID, String status);
+
+    /**
+     * Выводит количество активных постов, которые данный модератор отклонил или утвердил
+     *
+     * @param moderatorID номер пользователя
+     * @param status статус модерации: "ACCEPTED" или "DECLINED"
+     * @return количество постов
+     */
+    @Query(value = "select count(*) from posts p where moderator_id = ?1 and is_active = 1 and moderation_status = ?2", nativeQuery = true)
+    int countPostsByModeratorAndStatus(int moderatorID, String status);
 
     /**
      * Возвращает года, за которые есть хотя бы одна активная публикация.
