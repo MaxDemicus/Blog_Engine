@@ -4,6 +4,7 @@ import main.request.LoginRequest;
 import main.request.RegisterRequest;
 import main.response.CaptchaResponse;
 import main.response.LoginResponse;
+import main.response.ResponseWithErrors;
 import main.service.AuthService;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +31,7 @@ public class ApiAuthController {
     }
 
     @PostMapping("/register")
-    public LoginResponse register(@RequestBody RegisterRequest user){
+    public ResponseWithErrors register(@RequestBody RegisterRequest user){
         return authService.register(user);
     }
 

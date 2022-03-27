@@ -6,18 +6,15 @@ import main.repository.UserRepository;
 import main.request.LoginRequest;
 import main.request.RegisterRequest;
 import main.response.LoginResponse;
+import main.response.ResponseWithErrors;
 import main.service.AuthService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-
-import java.util.Map;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
@@ -58,7 +55,7 @@ public class TestAuthService {
 
         //Проверка неправильных данных
         RegisterRequest testRequest = new RegisterRequest("email1@mail.ru", "pass", "имя", "wrong_code", "secret");
-        LoginResponse response = authService.register(testRequest);
+        ResponseWithErrors response = authService.register(testRequest);
         assertFalse(response.isResult());
         assertThat(response.getErrors()).as("ошибки вводных данных не обнаружены").containsKeys("email", "name", "password", "captcha");
 

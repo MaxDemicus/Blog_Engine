@@ -11,6 +11,7 @@ import main.request.LoginRequest;
 import main.request.RegisterRequest;
 import main.response.CaptchaResponse;
 import main.response.LoginResponse;
+import main.response.ResponseWithErrors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -82,7 +83,7 @@ public class AuthService {
     private LoginResponse getLoginResponse(String email) {
         Optional<User> user = userRepository.findByEmail(email);
         if (user.isPresent()) {
-            LoginResponse response = LoginResponse.success(user.get());
+            LoginResponse response = new LoginResponse(user.get());
             if (response.getUser().isModeration()) {
                 response.getUser().setModerationCount(postRepository.countModeration());
             }
@@ -118,13 +119,13 @@ public class AuthService {
      * @param request объект {@link RegisterRequest} с данными пользователя и проверкой каптчи
      * @return {"result": true}, если проверка пройдена. Если не пройдена, то "result":false и Map "errors" с указанием ошибок
      */
-    public LoginResponse register(RegisterRequest request) {
+    public ResponseWithErrors register(RegisterRequest request) {
         Map<String, String> errors = checkRegisterRequest(request);
         if (errors.isEmpty()) {
             userRepository.save(User.from(request));
-            return new LoginResponse(true);
+            return new ResponseWithErrors(true);
         } else {
-            return LoginResponse.registersError(errors);
+            return new ResponseWithErrors(errors);
         }
     }
 

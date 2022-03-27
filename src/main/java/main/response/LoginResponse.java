@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import main.model.User;
 
-import java.util.Map;
-
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -15,25 +13,21 @@ public class LoginResponse {
 
     final boolean result;
     UserResponse user;
-    Map<String, String> errors;
 
-    public static LoginResponse success(User user) {
-        LoginResponse response = new LoginResponse(true);
-        response.setUser(new UserResponse(user));
-        return response;
+    public LoginResponse(boolean result) {
+        this.result = result;
     }
 
-    public static LoginResponse registersError(Map<String, String> errors) {
-        LoginResponse response = new LoginResponse(false);
-        response.setErrors(errors);
-        return response;
+    public LoginResponse(User user) {
+        this.result = true;
+        this.user = new UserResponse(user);
     }
 
     @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
     public static class UserResponse {
 
-        public UserResponse(User user) {
+        private UserResponse(User user) {
             id = user.getId();
             name = user.getName();
             photo = user.getPhoto();
