@@ -81,9 +81,9 @@ public class AuthService {
     }
 
     private LoginResponse getLoginResponse(String email) {
-        Optional<User> user = userRepository.findByEmail(email);
-        if (user.isPresent()) {
-            LoginResponse response = new LoginResponse(user.get());
+        User user = userRepository.findByEmail(email);
+        if (user != null) {
+            LoginResponse response = new LoginResponse(user);
             if (response.getUser().isModeration()) {
                 response.getUser().setModerationCount(postRepository.countModeration());
             }
@@ -131,7 +131,7 @@ public class AuthService {
 
     private Map<String, String> checkRegisterRequest(RegisterRequest user) {
         Map<String, String> errors = new HashMap<>();
-        if (userRepository.findByEmail(user.getEMail()).isPresent()) {
+        if (userRepository.findByEmail(user.getEMail()) != null) {
             errors.put("email", "Этот e-mail уже зарегистрирован");
         }
         if (!user.getName().matches("\\w+")) {
