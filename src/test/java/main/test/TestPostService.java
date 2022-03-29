@@ -1,6 +1,8 @@
 package main.test;
 
+import main.repository.PostRepository;
 import main.request.LoginRequest;
+import main.request.PostRequest;
 import main.response.CalendarResponse;
 import main.response.post.InnerPostFullResponse;
 import main.response.post.InnerPostResponse;
@@ -29,6 +31,8 @@ public class TestPostService {
     PostService postService;
     @Autowired
     AuthService authService;
+    @Autowired
+    PostRepository postRepository;
 
     private PostResponse response;
 
@@ -128,5 +132,20 @@ public class TestPostService {
         assertEquals(expectedCount, response.getCount(), "Неверное количество результатов");
         List<String> titles = response.getPosts().stream().map(InnerPostResponse::getTitle).collect(Collectors.toList());
         assertThat(titles).as("Неверный результат запроса").containsExactly(expectedTitles);
+    }
+
+    @DisplayName("Добавление поста")
+    @Test
+    @Transactional
+    void testAddPost() {
+        authService.login(new LoginRequest("email2@mail.ru", "password2"));
+        PostRequest request = new PostRequest(
+                System.currentTimeMillis(),
+                (byte) 1,
+                "new_title",
+                "text_text_text_text_text_text_text_text_text_text_",
+                List.of("tag1 для постов 1 и 2"));
+        postService.addPost(request);
+        assertTrue(postRepository.findById(15).isPresent());
     }
 }

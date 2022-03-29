@@ -1,7 +1,9 @@
 package main.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import main.enums.PostStatusInDB;
+import main.request.PostRequest;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -10,7 +12,20 @@ import java.util.List;
 
 @Entity(name = "posts")
 @Data
+@NoArgsConstructor
 public class Post {
+
+    public Post(PostRequest request) {
+        isActive = request.getActive();
+        moderationStatus = PostStatusInDB.NEW;
+        if (request.getTimestamp() < System.currentTimeMillis()) {
+            time = new Timestamp(System.currentTimeMillis());
+        } else {
+            time = new Timestamp(request.getTimestamp());
+        }
+        title = request.getTitle();
+        text = request.getText();
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

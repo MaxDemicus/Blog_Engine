@@ -18,4 +18,11 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
      */
     @Query(value = "select t.name as tag, count(p.id) as count" + PostRepository.activePostsAndTagsConditions + " and t.name like :query% group by tag", nativeQuery = true)
     List<Tuple> getTags(String query);
+
+    /**
+     * Ищет тег по имени
+     * @param name название тега
+     * @return найденный тег
+     */
+    Tag findByName(String name);
 }

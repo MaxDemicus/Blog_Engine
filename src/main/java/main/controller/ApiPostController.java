@@ -1,5 +1,7 @@
 package main.controller;
 
+import main.request.PostRequest;
+import main.response.ResponseWithErrors;
 import main.response.post.InnerPostFullResponse;
 import main.response.post.PostResponse;
 import main.service.PostService;
@@ -52,5 +54,11 @@ public class ApiPostController {
     @PreAuthorize("hasAuthority('MODERATE')")
     public PostResponse getModeratedPosts(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit, @RequestParam String status) {
         return postService.getModeratedPosts(offset, limit, status);
+    }
+
+    @PostMapping("")
+    @PreAuthorize("hasAuthority('WRITE')")
+    public ResponseWithErrors addPost(@RequestBody PostRequest request) {
+        return postService.addPost(request);
     }
 }

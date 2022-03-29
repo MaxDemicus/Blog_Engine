@@ -3,7 +3,11 @@ package main.service;
 import main.enums.PostStatusInDB;
 import main.enums.PostStatusInRequest;
 import main.model.Post;
+import main.model.Tag;
 import main.repository.PostRepository;
+import main.repository.TagRepository;
+import main.repository.UserRepository;
+import main.request.PostRequest;
 import main.response.*;
 import main.response.post.InnerPostAnnounceResponse;
 import main.response.post.InnerPostFullResponse;
@@ -13,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Tuple;
@@ -25,10 +30,14 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final TagRepository tagRepository;
     private final AuthService authService;
 
-    public PostService(PostRepository postRepository, AuthService authService) {
+    public PostService(PostRepository postRepository, UserRepository userRepository, TagRepository tagRepository, AuthService authService) {
         this.postRepository = postRepository;
+        this.userRepository = userRepository;
+        this.tagRepository = tagRepository;
         this.authService = authService;
     }
 
@@ -257,5 +266,34 @@ public class PostService {
             posts.put(date, count);
         }
         return new CalendarResponse(postRepository.getYears(), posts);
+    }
+
+    /**
+     * Создаёт новый пост, если в введённых данных нет ошибок
+     *
+     * @param request данные поста: время публикации, скрыт ли пост, название, текст, теги
+     * @return true, если ошибок нет, false и список ошибок, если они есть
+     */
+    public ResponseWithErrors addPost(PostRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        if (request.getTitle().length() < 3) {
+            errors.put("title", "Заголовок не установлен");
+        }
+        if (request.getText().length() < 50) {
+            errors.put("text", "Текст публикации слишком короткий");
+        }
+        if (!errors.isEmpty()) {
+            return new ResponseWithErrors(errors);
+        }
+        Post post = new Post(request);
+        String author = SecurityContextHolder.getContext().getAuthentication().getName();
+        post.setUser(userRepository.findByEmail(author));
+        List<Tag> tags = new ArrayList<>();
+        for (String tagName : request.getTags()) {
+            tags.add(tagRepository.findByName(tagName));
+        }
+        post.setTags(tags);
+        postRepository.saveAndFlush(post);
+        return new ResponseWithErrors(true);
     }
 }
