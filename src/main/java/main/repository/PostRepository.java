@@ -1,6 +1,7 @@
 package main.repository;
 
 import main.model.Post;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,7 +24,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @return список постов
      */
     @Query(value = "select *" + activePostsConditions, nativeQuery = true)
-    List<Post> findActivePosts(PageRequest page);
+    Page<Post> findActivePosts(PageRequest page);
 
     /**
      * Возвращает посты, соответствующие поисковому запросу.
@@ -33,7 +34,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @return список постов
      */
     @Query(value = "select *" + activePostsConditions + " and p.text like %?1%", nativeQuery = true)
-    List<Post> findActivePostsBySearch(String query, PageRequest page);
+    Page<Post> findActivePostsBySearch(String query, PageRequest page);
 
     /**
      * Выводит посты за указанную дату
@@ -43,7 +44,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @return список постов
      */
     @Query(value = "select *" + activePostsConditions + " and date(time) = ?1", nativeQuery = true)
-    List<Post> findActivePostsByDate(String date, PageRequest page);
+    Page<Post> findActivePostsByDate(String date, PageRequest page);
 
     /**
      * Выводит посты, привязанные к указанному тегу
@@ -53,7 +54,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @return список постов
      */
     @Query(value = "select p.*" + activePostsAndTagsConditions + " and t.name = ?1", nativeQuery = true)
-    List<Post> findActivePostsByTag(String tag, PageRequest page);
+    Page<Post> findActivePostsByTag(String tag, PageRequest page);
 
     /**
      * Выводит список неактивных постов, которые создал пользователь
@@ -63,7 +64,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @return список постов
      */
     @Query(value = "select * from posts p where user_id = ?1 and is_active = 0", nativeQuery = true)
-    List<Post> findInactivePostsByUser(int userID, PageRequest page);
+    Page<Post> findInactivePostsByUser(int userID, PageRequest page);
 
     /**
      * Выводит список новых постов, для которых требуется модерация
@@ -71,7 +72,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @return список постов
      */
     @Query(value = "select * from posts p where moderation_status = 'NEW' and is_active = 1", nativeQuery = true)
-    List<Post> findModeration(PageRequest page);
+    Page<Post> findModeration(PageRequest page);
 
     /**
      * Выводит список активных постов, которые создал пользователь, с определённым статусом модерации
@@ -82,7 +83,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @return список постов
      */
     @Query(value = "select * from posts p where user_id = ?1 and is_active = 1 and moderation_status = ?2", nativeQuery = true)
-    List<Post> findPostsByUserAndStatus(int userID, String status, PageRequest page);
+    Page<Post> findPostsByUserAndStatus(int userID, String status, PageRequest page);
 
     /**
      * Выводит список активных постов, которые данный модератор отклонил или утвердил
@@ -93,15 +94,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @return список постов
      */
     @Query(value = "select * from posts p where moderator_id = ?1 and is_active = 1 and moderation_status = ?2", nativeQuery = true)
-    List<Post> findPostsByModeratorAndStatus(int moderatorID, String status, PageRequest page);
-
-    /**
-     * Возвращает общее количество активных постов
-     *
-     * @return количество постов
-     */
-    @Query(value = "select count(*)" + activePostsConditions, nativeQuery = true)
-    int countActivePosts();
+    Page<Post> findPostsByModeratorAndStatus(int moderatorID, String status, PageRequest page);
 
     /**
      * Возвращает количество постов, требующих модерации
@@ -110,62 +103,6 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      */
     @Query(value = "select count(*) from posts where moderation_status = 'NEW' and moderator_id is null and is_active = 1", nativeQuery = true)
     int countModeration();
-
-    /**
-     * Возвращает количество активных постов, соответствующих поисковому запросу
-     *
-     * @param query поисковый запрос
-     * @return количество постов
-     */
-    @Query(value = "select count(*)" + activePostsConditions + " and p.text like %:query%", nativeQuery = true)
-    int countActivePostsBySearch(String query);
-
-    /**
-     * Возвращает количество активных постов за указанную дату
-     *
-     * @param date поисковый запрос
-     * @return количество постов
-     */
-    @Query(value = "select count(*)" + activePostsConditions + " and date(time) = :date", nativeQuery = true)
-    int countActivePostsByDate(String date);
-
-    /**
-     * Возвращает количество постов, привязанных к определённому тегу
-     *
-     * @param tag запрошенный тег
-     * @return количество постов
-     */
-    @Query(value = "select count(*)" + activePostsAndTagsConditions + " and t.name = :tag", nativeQuery = true)
-    int countActivePostsByTag(String tag);
-
-    /**
-     * Количество неактивных постов, которые создал пользователь
-     *
-     * @param userID номер пользователя
-     * @return количество постов
-     */
-    @Query(value = "select count(*) from posts p where user_id = ?1 and is_active = 0", nativeQuery = true)
-    int countInactivePostsByUser(int userID);
-
-    /**
-     * Количество активных постов, которые создал пользователь с определённым статусом модерации
-     *
-     * @param userID номер пользователя
-     * @param status статус модерации: "NEW", "ACCEPTED" или "DECLINED"
-     * @return количество постов
-     */
-    @Query(value = "select count(*) from posts p where user_id = ?1 and is_active = 1 and moderation_status = ?2", nativeQuery = true)
-    int countPostsByUserAndStatus(int userID, String status);
-
-    /**
-     * Выводит количество активных постов, которые данный модератор отклонил или утвердил
-     *
-     * @param moderatorID номер пользователя
-     * @param status статус модерации: "ACCEPTED" или "DECLINED"
-     * @return количество постов
-     */
-    @Query(value = "select count(*) from posts p where moderator_id = ?1 and is_active = 1 and moderation_status = ?2", nativeQuery = true)
-    int countPostsByModeratorAndStatus(int moderatorID, String status);
 
     /**
      * Возвращает года, за которые есть хотя бы одна активная публикация.

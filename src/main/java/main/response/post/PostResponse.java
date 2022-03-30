@@ -10,6 +10,6 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PostResponse {
 
-    int count;
+    long count;
     List<InnerPostResponse> posts;
 }

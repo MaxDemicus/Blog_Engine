@@ -13,6 +13,7 @@ import main.response.post.InnerPostAnnounceResponse;
 import main.response.post.InnerPostFullResponse;
 import main.response.post.InnerPostResponse;
 import main.response.post.PostResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
@@ -64,9 +65,8 @@ public class PostService {
      */
     public PostResponse getPost(int offset, int limit, String mode) {
         PageRequest page = PageRequest.of(offset, limit, getSort(mode));
-        int postCount = postRepository.countActivePosts();
-        List<Post> posts = postRepository.findActivePosts(page);
-        return getResponse(postCount, posts);
+        Page<Post> posts = postRepository.findActivePosts(page);
+        return getResponse(posts);
     }
 
     /**
@@ -84,9 +84,8 @@ public class PostService {
      */
     public PostResponse getPostBySearch(int offset, int limit, String query) {
         PageRequest page = PageRequest.of(offset, limit, getSort("recent"));
-        List<Post> posts = postRepository.findActivePostsBySearch(query, page);
-        int postCount = postRepository.countActivePostsBySearch(query);
-        return getResponse(postCount, posts);
+        Page<Post> posts = postRepository.findActivePostsBySearch(query, page);
+        return getResponse(posts);
     }
 
     /**
@@ -103,9 +102,8 @@ public class PostService {
      */
     public PostResponse getPostByDate(int offset, int limit, String date) {
         PageRequest page = PageRequest.of(offset, limit);
-        List<Post> posts = postRepository.findActivePostsByDate(date, page);
-        int postCount = postRepository.countActivePostsByDate(date);
-        return getResponse(postCount, posts);
+        Page<Post> posts = postRepository.findActivePostsByDate(date, page);
+        return getResponse(posts);
     }
 
     /**
@@ -123,9 +121,8 @@ public class PostService {
      */
     public PostResponse getPostByTag(int offset, int limit, String tag) {
         PageRequest page = PageRequest.of(offset, limit);
-        List<Post> posts = postRepository.findActivePostsByTag(tag, page);
-        int postCount = postRepository.countActivePostsByTag(tag);
-        return getResponse(postCount, posts);
+        Page<Post> posts = postRepository.findActivePostsByTag(tag, page);
+        return getResponse(posts);
     }
 
     /**
@@ -149,17 +146,14 @@ public class PostService {
     public PostResponse getMyPosts(int offset, int limit, String status) {
         PageRequest page = PageRequest.of(offset, limit);
         int id = authService.check().getUser().getId();
-        List<Post> posts;
-        int postCount;
+        Page<Post> posts;
         if (status.equalsIgnoreCase("inactive")) {
             posts = postRepository.findInactivePostsByUser(id, page);
-            postCount = postRepository.countInactivePostsByUser(id);
         } else {
             String statusInDB = PostStatusInRequest.valueOf(status).getStatusInDB();
             posts = postRepository.findPostsByUserAndStatus(id, statusInDB, page);
-            postCount = postRepository.countPostsByUserAndStatus(id, statusInDB);
         }
-        return getResponse(postCount, posts);
+        return getResponse(posts);
     }
 
     /**
@@ -182,22 +176,19 @@ public class PostService {
      */
     public PostResponse getModeratedPosts(int offset, int limit, String status) {
         PageRequest page = PageRequest.of(offset, limit);
-        List<Post> posts;
-        int postCount;
+        Page<Post> posts;
         if (status.equalsIgnoreCase(PostStatusInDB.NEW.toString())) {
             posts = postRepository.findModeration(page);
-            postCount = postRepository.countModeration();
         } else {
             int id = authService.check().getUser().getId();
             posts = postRepository.findPostsByModeratorAndStatus(id, status.toUpperCase(), page);
-            postCount = postRepository.countPostsByModeratorAndStatus(id, status.toUpperCase());
         }
-        return getResponse(postCount, posts);
+        return getResponse(posts);
     }
 
-    private PostResponse getResponse(int postCount, List<Post> posts) {
-        List<InnerPostResponse> responses = posts.stream().map(InnerPostAnnounceResponse::new).collect(Collectors.toList());
-        return new PostResponse(postCount, responses);
+    private PostResponse getResponse(Page<Post> posts) {
+        List<InnerPostResponse> responses = posts.getContent().stream().map(InnerPostAnnounceResponse::new).collect(Collectors.toList());
+        return new PostResponse(posts.getTotalElements(), responses);
     }
 
     /**
