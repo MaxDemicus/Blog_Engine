@@ -15,18 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 public class Post {
 
-    public Post(PostRequest request) {
-        isActive = request.getActive();
-        moderationStatus = PostStatusInDB.NEW;
-        if (request.getTimestamp() < System.currentTimeMillis()) {
-            time = new Timestamp(System.currentTimeMillis());
-        } else {
-            time = new Timestamp(request.getTimestamp());
-        }
-        title = request.getTitle();
-        text = request.getText();
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -75,5 +63,14 @@ public class Post {
     @OneToMany(mappedBy = "post")
     private List<PostComment> comments;
 
-
+    public void fillFromRequest (PostRequest request) {
+        setIsActive(request.getActive());
+        setTitle(request.getTitle());
+        setText(request.getText());
+        if (request.getTimestamp() < System.currentTimeMillis()) {
+            setTime(new Timestamp(System.currentTimeMillis()));
+        } else {
+            setTime(new Timestamp(request.getTimestamp()));
+        }
+    }
 }

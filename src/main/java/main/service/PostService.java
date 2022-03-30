@@ -4,6 +4,7 @@ import main.enums.PostStatusInDB;
 import main.enums.PostStatusInRequest;
 import main.model.Post;
 import main.model.Tag;
+import main.model.User;
 import main.repository.PostRepository;
 import main.repository.TagRepository;
 import main.repository.UserRepository;
@@ -266,17 +267,13 @@ public class PostService {
      * @return true, если ошибок нет, false и список ошибок, если они есть
      */
     public ResponseWithErrors addPost(PostRequest request) {
-        Map<String, String> errors = new HashMap<>();
-        if (request.getTitle().length() < 3) {
-            errors.put("title", "Заголовок не установлен");
-        }
-        if (request.getText().length() < 50) {
-            errors.put("text", "Текст публикации слишком короткий");
-        }
+        Map<String, String> errors = checkPostRequest(request);
         if (!errors.isEmpty()) {
             return new ResponseWithErrors(errors);
         }
-        Post post = new Post(request);
+        Post post = new Post();
+        post.fillFromRequest(request);
+        post.setModerationStatus(PostStatusInDB.NEW);
         String author = SecurityContextHolder.getContext().getAuthentication().getName();
         post.setUser(userRepository.findByEmail(author));
         List<Tag> tags = new ArrayList<>();
@@ -287,4 +284,48 @@ public class PostService {
         postRepository.saveAndFlush(post);
         return new ResponseWithErrors(true);
     }
+
+    /**
+     * Метод изменяет данные поста с идентификатором ID на те, которые пользователь ввёл в форму
+     * публикации.
+     *
+     * @param request данные поста: время публикации, скрыт ли пост, название, текст, теги
+     * @return true, если ошибок нет, false и список ошибок, если они есть
+     */
+    public ResponseWithErrors editPost(PostRequest request, int postID) {
+        Map<String, String> errors = checkPostRequest(request);
+        if (!errors.isEmpty()) {
+            return new ResponseWithErrors(errors);
+        }
+        Post post = postRepository.findById(postID).orElse(null);
+        if (post == null) {
+            return new ResponseWithErrors(false);
+        }
+        post.fillFromRequest(request);
+        String curUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User curUser = userRepository.findByEmail(curUserEmail);
+        if (curUser.getId() == post.getUser().getId()) {
+            post.setModerationStatus(PostStatusInDB.NEW);
+        }
+        List<Tag> tags = new ArrayList<>();
+        for (String tagName : request.getTags()) {
+            tags.add(tagRepository.findByName(tagName));
+        }
+        post.setTags(tags);
+        postRepository.saveAndFlush(post);
+        return new ResponseWithErrors(true);
+    }
+
+    private Map<String, String> checkPostRequest(PostRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        if (request.getTitle().length() < 3) {
+            errors.put("title", "Заголовок не установлен");
+        }
+        if (request.getText().length() < 50) {
+            errors.put("text", "Текст публикации слишком короткий");
+        }
+        return errors;
+    }
+
+
 }

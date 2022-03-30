@@ -1,5 +1,8 @@
 package main.test;
 
+import main.enums.PostStatusInDB;
+import main.model.Post;
+import main.model.Tag;
 import main.repository.PostRepository;
 import main.request.LoginRequest;
 import main.request.PostRequest;
@@ -147,5 +150,26 @@ public class TestPostService {
                 List.of("tag1 для постов 1 и 2"));
         postService.addPost(request);
         assertTrue(postRepository.findById(15).isPresent());
+    }
+
+    @DisplayName("Редактирование поста")
+    @Test
+    @Transactional
+    void testEditPost() {
+        authService.login(new LoginRequest("email3@mail.ru", "password3"));
+        PostRequest request = new PostRequest(
+                System.currentTimeMillis(),
+                (byte) 0,
+                "new_title",
+                "text_text_text_text_text_text_text_text_text_text_",
+                List.of("tag1 для постов 1 и 2", "tag2 для поста 1"));
+        postService.editPost(request, 2);
+        Post post = postRepository.findById(2).get();
+        assertEquals(0, post.getIsActive());
+        assertEquals("new_title", post.getTitle());
+        assertEquals("text_text_text_text_text_text_text_text_text_text_", post.getText());
+        assertEquals(post.getModerationStatus(), PostStatusInDB.NEW);
+        List<String> tags = post.getTags().stream().map(Tag::getName).collect(Collectors.toList());
+        assertThat(tags).containsOnly("tag1 для постов 1 и 2", "tag2 для поста 1");
     }
 }

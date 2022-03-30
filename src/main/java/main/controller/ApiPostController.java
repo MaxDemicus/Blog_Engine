@@ -61,4 +61,10 @@ public class ApiPostController {
     public ResponseWithErrors addPost(@RequestBody PostRequest request) {
         return postService.addPost(request);
     }
+
+    @PutMapping("/{ID}")
+    @PreAuthorize("hasAuthority('WRITE')")
+    public ResponseWithErrors editPost(@RequestBody PostRequest request, @PathVariable int ID) {
+        return postService.editPost(request, ID);
+    }
 }
