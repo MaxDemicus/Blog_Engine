@@ -201,24 +201,16 @@ public class PostService {
      */
     public ResponseEntity<InnerPostFullResponse> getPostById(int id) {
         Post post = postRepository.findById(id).orElse(null);
-        if (post != null) {
-            increaseViewCount(post);
-            return ResponseEntity.ok(new InnerPostFullResponse(post));
-        } else {
+        if (post == null) {
             return ResponseEntity.notFound().build();
         }
-    }
-
-    private void increaseViewCount(Post post) {
         LoginResponse auth = authService.check();
-        if (auth.isResult()) {
-            LoginResponse.UserResponse user = auth.getUser();
-            if (user.isModeration() || user.getId() == post.getUser().getId()) {
-                return;
-            }
+        //если пользователь не авторизован или не является модератором или автором поста, увеличить количество просмотров
+        if ((!auth.isResult()) || (!auth.getUser().isModeration() && auth.getUser().getId() != post.getUser().getId())) {
+            post.setViewCount(post.getViewCount() + 1);
+            postRepository.save(post);
         }
-        post.setViewCount(post.getViewCount() + 1);
-        postRepository.save(post);
+        return ResponseEntity.ok(new InnerPostFullResponse(post));
     }
 
     private Sort getSort(String mode) {
