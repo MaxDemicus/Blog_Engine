@@ -2,6 +2,7 @@ package main.service;
 
 import main.enums.PostStatusInDB;
 import main.enums.PostStatusInRequest;
+import main.enums.SortMode;
 import main.model.Post;
 import main.model.Tag;
 import main.model.User;
@@ -16,8 +17,6 @@ import main.response.post.InnerPostResponse;
 import main.response.post.PostResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -65,7 +64,7 @@ public class PostService {
      * </ul>
      */
     public PostResponse getPost(int offset, int limit, String mode) {
-        PageRequest page = PageRequest.of(offset, limit, getSort(mode));
+        PageRequest page = PageRequest.of(offset, limit, SortMode.valueOf(mode).getSort());
         Page<Post> posts = postRepository.findActivePosts(page);
         return getResponse(posts);
     }
@@ -84,7 +83,7 @@ public class PostService {
      * </ul>
      */
     public PostResponse getPostBySearch(int offset, int limit, String query) {
-        PageRequest page = PageRequest.of(offset, limit, getSort("recent"));
+        PageRequest page = PageRequest.of(offset, limit, SortMode.recent.getSort());
         Page<Post> posts = postRepository.findActivePostsBySearch(query, page);
         return getResponse(posts);
     }
@@ -211,20 +210,6 @@ public class PostService {
             postRepository.save(post);
         }
         return ResponseEntity.ok(new InnerPostFullResponse(post));
-    }
-
-    private Sort getSort(String mode) {
-        switch (mode) {
-            case ("early"):
-                return JpaSort.by(Sort.Direction.ASC, "time");
-            case ("popular"):
-                return JpaSort.unsafe(Sort.Direction.DESC, "(select count(c.post_id) from post_comments c where p.id=c.post_id)");
-            case ("best"):
-                return JpaSort.unsafe(Sort.Direction.DESC, "(select count(v.post_id) from post_votes v where p.id=v.post_id and v.value=1)");
-            case ("recent"):
-            default:
-                return JpaSort.by(Sort.Direction.DESC, "time");
-        }
     }
 
     /**
