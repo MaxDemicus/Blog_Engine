@@ -1,12 +1,10 @@
 package main.controller;
 
+import main.request.CommentRequest;
 import main.response.CalendarResponse;
 import main.response.InitResponse;
 import main.response.TagResponse;
-import main.service.GeneralService;
-import main.service.GlobalSettingService;
-import main.service.PostService;
-import main.service.TagsService;
+import main.service.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,13 +21,15 @@ public class ApiGeneralController {
     private final TagsService tagsService;
     private final PostService postService;
     private final GeneralService generalService;
+    private final CommentService commentService;
 
-    public ApiGeneralController(GlobalSettingService globalSettingService, InitResponse initResponse, TagsService tagsService, PostService postService, GeneralService generalService) {
+    public ApiGeneralController(GlobalSettingService globalSettingService, InitResponse initResponse, TagsService tagsService, PostService postService, GeneralService generalService, CommentService commentService) {
         this.globalSettingService = globalSettingService;
         this.initResponse = initResponse;
         this.tagsService = tagsService;
         this.postService = postService;
         this.generalService = generalService;
+        this.commentService = commentService;
     }
 
     @GetMapping("/init")
@@ -56,5 +56,11 @@ public class ApiGeneralController {
     @PreAuthorize("hasAuthority('WRITE')")
     public ResponseEntity<Object> postImage(MultipartFile image) {
         return generalService.saveImage(image);
+    }
+
+    @PostMapping("/comment")
+    @PreAuthorize("hasAuthority('WRITE')")
+    public ResponseEntity<Object> postComment(@RequestBody CommentRequest request) {
+        return commentService.addComment(request);
     }
 }

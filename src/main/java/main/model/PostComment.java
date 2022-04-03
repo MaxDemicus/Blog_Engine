@@ -1,6 +1,7 @@
 package main.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -8,7 +9,16 @@ import java.sql.Timestamp;
 
 @Entity(name = "post_comments")
 @Data
+@NoArgsConstructor
 public class PostComment {
+
+    public PostComment(PostComment parentComment, Post post, User user, String text) {
+        this.parentComment = parentComment;
+        this.post = post;
+        this.user = user;
+        this.text = text;
+        this.time = new Timestamp(System.currentTimeMillis());
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

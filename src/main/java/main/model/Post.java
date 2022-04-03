@@ -73,4 +73,16 @@ public class Post {
             setTime(new Timestamp(request.getTimestamp()));
         }
     }
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id=" + id +
+                ", isActive=" + isActive +
+                ", moderationStatus=" + moderationStatus +
+                ", time=" + time +
+                ", title='" + title + '\'' +
+                ", text='" + text + '\'' +
+                '}';
+    }
 }

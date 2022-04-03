@@ -68,4 +68,15 @@ public class User {
     public Role getRole(){
         return isModerator == 1 ? Role.MODERATOR : Role.USER;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", isModerator=" + isModerator +
+                ", regTime=" + regTime +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
 }
