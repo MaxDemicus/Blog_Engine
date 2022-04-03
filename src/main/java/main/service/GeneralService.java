@@ -10,13 +10,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 
 @Service
 public class GeneralService {
 
-    public final int MAX_FILE_SIZE = 1_048_576; //1MB
+    public final static int MAX_FILE_SIZE = 1_048_576; //1MB
 
     /**
      * Загружает на сервер изображение
@@ -25,12 +24,11 @@ public class GeneralService {
      * @return путь до изображения на сервере
      */
     public ResponseEntity<Object> saveImage(MultipartFile image) {
-        System.out.println();
         Map<String, String> errors = new HashMap<>();
         if (image.getSize() > MAX_FILE_SIZE) {
             errors.put("image", "Размер файла превышает допустимый размер");
         }
-        if (!Objects.equals(image.getContentType(), "image/jpeg") && !Objects.equals(image.getContentType(), "image/png")) {
+        if ("image/jpeg".equals(image.getContentType()) && "image/png".equals(image.getContentType())) {
             errors.put("image", "Формат файла не jpg или png");
         }
         if (!errors.isEmpty()) {
