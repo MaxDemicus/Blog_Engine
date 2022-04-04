@@ -1,8 +1,10 @@
 package main.controller;
 
 import main.request.CommentRequest;
+import main.request.ModerateRequest;
 import main.response.CalendarResponse;
 import main.response.InitResponse;
+import main.response.ResponseWithErrors;
 import main.response.TagResponse;
 import main.service.*;
 import org.springframework.http.ResponseEntity;
@@ -62,5 +64,11 @@ public class ApiGeneralController {
     @PreAuthorize("hasAuthority('WRITE')")
     public ResponseEntity<Object> postComment(@RequestBody CommentRequest request) {
         return commentService.addComment(request);
+    }
+
+    @PostMapping("/moderation")
+    @PreAuthorize("hasAuthority('MODERATE')")
+    public ResponseWithErrors postModerate(@RequestBody ModerateRequest request) {
+        return postService.moderatePost(request);
     }
 }

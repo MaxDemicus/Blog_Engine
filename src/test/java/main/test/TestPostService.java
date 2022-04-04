@@ -5,8 +5,10 @@ import main.model.Post;
 import main.model.Tag;
 import main.repository.PostRepository;
 import main.request.LoginRequest;
+import main.request.ModerateRequest;
 import main.request.PostRequest;
 import main.response.CalendarResponse;
+import main.response.ResponseWithErrors;
 import main.response.post.InnerPostFullResponse;
 import main.response.post.InnerPostResponse;
 import main.response.post.PostResponse;
@@ -171,5 +173,24 @@ public class TestPostService {
         assertEquals(post.getModerationStatus(), PostStatusInDB.NEW);
         List<String> tags = post.getTags().stream().map(Tag::getName).collect(Collectors.toList());
         assertThat(tags).containsOnly("tag1 для постов 1 и 2", "tag2 для поста 1");
+    }
+
+    @DisplayName("Модерация поста")
+    @Test
+    @Transactional
+    void testModeratePost() {
+        authService.login(new LoginRequest("email1@mail.ru", "password1"));
+
+        ModerateRequest request = new ModerateRequest(15, "accept");
+        assertFalse(postService.moderatePost(request).isResult());
+        request = new ModerateRequest(1, "public");
+        assertFalse(postService.moderatePost(request).isResult());
+
+        request = new ModerateRequest(1, "accept");
+        ResponseWithErrors response = postService.moderatePost(request);
+        assertTrue(response.isResult());
+        Post post = postRepository.findById(1).get();
+        assertEquals(1, post.getModerator().getId());
+        assertEquals(PostStatusInDB.ACCEPTED, post.getModerationStatus());
     }
 }

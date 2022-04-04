@@ -1,14 +1,14 @@
 package main.service;
 
+import main.enums.ModerationDecision;
 import main.enums.PostStatusInDB;
 import main.enums.PostStatusInRequest;
 import main.enums.SortMode;
 import main.model.Post;
 import main.model.Tag;
-import main.model.User;
 import main.repository.PostRepository;
 import main.repository.TagRepository;
-import main.repository.UserRepository;
+import main.request.ModerateRequest;
 import main.request.PostRequest;
 import main.response.*;
 import main.response.post.InnerPostAnnounceResponse;
@@ -18,7 +18,6 @@ import main.response.post.PostResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.Tuple;
@@ -31,13 +30,13 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final TagRepository tagRepository;
     private final AuthService authService;
 
-    public PostService(PostRepository postRepository, UserRepository userRepository, TagRepository tagRepository, AuthService authService) {
+    public PostService(PostRepository postRepository, UserService userService, TagRepository tagRepository, AuthService authService) {
         this.postRepository = postRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.tagRepository = tagRepository;
         this.authService = authService;
     }
@@ -131,12 +130,12 @@ public class PostService {
      * @param offset сдвиг от 0 для постраничного вывода, 0 по умолчанию
      * @param limit  количество постов, которое надо вывести, 10 по умолчанию
      * @param status status - статус модерации:
-     * <ul>
-     * <li> inactive - скрытые, ещё не опубликованы
-     * <li> pending - активные, ожидают утверждения модератором
-     * <li> declined - отклонённые по итогам модерации
-     * <li> published - опубликованные по итогам модерации
-     * </ul>
+     *               <ul>
+     *               <li> inactive - скрытые, ещё не опубликованы
+     *               <li> pending - активные, ожидают утверждения модератором
+     *               <li> declined - отклонённые по итогам модерации
+     *               <li> published - опубликованные по итогам модерации
+     *               </ul>
      * @return {@link PostResponse}, в котором:
      * <ul>
      * <li> поле 'count' - общее количество постов, которое доступно по данному запросу
@@ -163,11 +162,11 @@ public class PostService {
      * @param offset сдвиг от 0 для постраничного вывода, 0 по умолчанию
      * @param limit  количество постов, которое надо вывести, 10 по умолчанию
      * @param status status - статус модерации:
-     * <ul>
-     * <li> new - новые, необходима модерация
-     * <li> declined - отклонённые текущим пользователем
-     * <li> accepted - утверждённые текущим пользователем
-     * </ul>
+     *               <ul>
+     *               <li> new - новые, необходима модерация
+     *               <li> declined - отклонённые текущим пользователем
+     *               <li> accepted - утверждённые текущим пользователем
+     *               </ul>
      * @return {@link PostResponse}, в котором:
      * <ul>
      * <li> поле 'count' - общее количество постов, которое доступно по данному запросу
@@ -251,8 +250,7 @@ public class PostService {
         Post post = new Post();
         post.fillFromRequest(request);
         post.setModerationStatus(PostStatusInDB.NEW);
-        String author = SecurityContextHolder.getContext().getAuthentication().getName();
-        post.setUser(userRepository.findByEmail(author));
+        post.setUser(userService.getCurrentUser());
         List<Tag> tags = new ArrayList<>();
         for (String tagName : request.getTags()) {
             tags.add(tagRepository.findByName(tagName));
@@ -279,9 +277,7 @@ public class PostService {
             return new ResponseWithErrors(false);
         }
         post.fillFromRequest(request);
-        String curUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        User curUser = userRepository.findByEmail(curUserEmail);
-        if (curUser.getId() == post.getUser().getId()) {
+        if (userService.getCurrentUser().getId() == post.getUser().getId()) {
             post.setModerationStatus(PostStatusInDB.NEW);
         }
         List<Tag> tags = new ArrayList<>();
@@ -304,5 +300,26 @@ public class PostService {
         return errors;
     }
 
-
+    /**
+     * Фиксирует действие модератора по посту: его утверждение или отклонение. Кроме того,
+     * фиксируется moderator_id - идентификатор пользователя, который отмодерировал пост.
+     *
+     * @param request номер поста и модерационное действие: accept или decline
+     * @return "result":true, если изменение прошло успешно, иначе "result":false
+     */
+    public ResponseWithErrors moderatePost(ModerateRequest request) {
+        Post post = postRepository.findById(request.getPostId()).orElse(null);
+        if (post == null) {
+            return new ResponseWithErrors(false);
+        }
+        try {
+            PostStatusInDB newStatus = ModerationDecision.valueOf(request.getDecision()).getStatus();
+            post.setModerationStatus(newStatus);
+            post.setModerator(userService.getCurrentUser());
+            postRepository.saveAndFlush(post);
+            return new ResponseWithErrors(true);
+        } catch (IllegalArgumentException e) {
+            return new ResponseWithErrors(false);
+        }
+    }
 }
