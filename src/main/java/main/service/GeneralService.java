@@ -15,7 +15,7 @@ import java.util.Random;
 @Service
 public class GeneralService {
 
-    public final static int MAX_FILE_SIZE = 1_048_576; //1MB
+    public final static int MAX_FILE_SIZE = 5_242_880; //5MB
 
     /**
      * Загружает на сервер изображение
@@ -28,7 +28,7 @@ public class GeneralService {
         if (image.getSize() > MAX_FILE_SIZE) {
             errors.put("image", "Размер файла превышает допустимый размер");
         }
-        if ("image/jpeg".equals(image.getContentType()) && "image/png".equals(image.getContentType())) {
+        if (!"image/jpeg".equals(image.getContentType()) && !"image/png".equals(image.getContentType())) {
             errors.put("image", "Формат файла не jpg или png");
         }
         if (!errors.isEmpty()) {

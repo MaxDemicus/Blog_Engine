@@ -21,15 +21,17 @@ import static org.junit.jupiter.api.Assertions.*;
 @ActiveProfiles("test")
 public class TestGeneralService {
 
+    public static final String TEST_IMAGE = "src/main/resources/static/default-1.png";
+
     @Autowired
     private GeneralService generalService;
 
-    @DisplayName("Запрос каптчи")
+    @DisplayName("Сохранение изображения")
     @Test
     @Transactional
     void testSaveImage() {
         try {
-            Path testPath = Path.of("src/main/resources/static/default-1.png");
+            Path testPath = Path.of(TEST_IMAGE);
             byte[] content = Files.readAllBytes(testPath);
             MultipartFile image = new MockMultipartFile("testImage", "default-1.png", "image/png", content);
             ResponseEntity<Object> response = generalService.saveImage(image);

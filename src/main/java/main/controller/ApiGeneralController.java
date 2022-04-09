@@ -2,11 +2,13 @@ package main.controller;
 
 import main.request.CommentRequest;
 import main.request.ModerateRequest;
+import main.request.ProfileRequest;
 import main.response.CalendarResponse;
 import main.response.InitResponse;
 import main.response.ResponseWithErrors;
 import main.response.TagResponse;
 import main.service.*;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,14 +26,16 @@ public class ApiGeneralController {
     private final PostService postService;
     private final GeneralService generalService;
     private final CommentService commentService;
+    private final UserService userService;
 
-    public ApiGeneralController(GlobalSettingService globalSettingService, InitResponse initResponse, TagsService tagsService, PostService postService, GeneralService generalService, CommentService commentService) {
+    public ApiGeneralController(GlobalSettingService globalSettingService, InitResponse initResponse, TagsService tagsService, PostService postService, GeneralService generalService, CommentService commentService, UserService userService) {
         this.globalSettingService = globalSettingService;
         this.initResponse = initResponse;
         this.tagsService = tagsService;
         this.postService = postService;
         this.generalService = generalService;
         this.commentService = commentService;
+        this.userService = userService;
     }
 
     @GetMapping("/init")
@@ -70,5 +74,17 @@ public class ApiGeneralController {
     @PreAuthorize("hasAuthority('MODERATE')")
     public ResponseWithErrors postModerate(@RequestBody ModerateRequest request) {
         return postService.moderatePost(request);
+    }
+
+    @PostMapping(path = "/profile/my", consumes = {MediaType.APPLICATION_JSON_VALUE})
+    @PreAuthorize("hasAuthority('WRITE')")
+    public ResponseEntity<ResponseWithErrors> postProfileWithoutPhoto(@RequestBody ProfileRequest request) {
+        return userService.editProfile(request, null);
+    }
+
+    @PostMapping(path = "/profile/my", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PreAuthorize("hasAuthority('WRITE')")
+    public ResponseEntity<ResponseWithErrors> postProfileWithPhoto(@ModelAttribute ProfileRequest request, @RequestPart MultipartFile photo) {
+        return userService.editProfile(request, photo);
     }
 }
