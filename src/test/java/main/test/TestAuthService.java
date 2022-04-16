@@ -90,4 +90,11 @@ public class TestAuthService {
         assertFalse(response.isResult());
     }
 
+    @DisplayName("Восстановление пароля")
+    @Test
+    @Transactional
+    void testRestorePass() {
+        assertFalse(authService.restorePassword("email5@mail.ru").isResult());
+        assertTrue(authService.restorePassword("email1@mail.ru").isResult());
+    }
 }

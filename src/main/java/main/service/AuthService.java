@@ -20,11 +20,22 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.MimeMessage;
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 @Service
 public class AuthService {
+
+    private final static String PROPS_FILE = "mail.properties";
 
     @Value("${captcha_obsolete_period:60}")
     int captchaObsoletePeriod;
@@ -144,5 +155,50 @@ public class AuthService {
             errors.put("captcha", "Код с картинки введён неверно");
         }
         return errors;
+    }
+
+    /**
+     * Проверяет наличие в базе пользователя с указанным e-mail.
+     * Если пользователь найден, ему отправляется письмо со ссылкой на восстановление пароля.
+     *
+     * @param email - адрес электронной почты
+     * @return true или false, в зависимости от того, найден ли пользователь
+     */
+    public ResponseWithErrors restorePassword(String email) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            return new ResponseWithErrors(false);
+        }
+        String hash = UUID.randomUUID().toString().replaceAll("-", "");
+        user.setCode(hash);
+        userRepository.saveAndFlush(user);
+        String link = "/login/change-password/" + hash;
+        try {
+            sendEMail(email, link);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            return new ResponseWithErrors(false);
+        }
+        return new ResponseWithErrors(true);
+    }
+
+    private void sendEMail(String email, String text) throws MessagingException {
+        Properties props = new Properties();
+        try (InputStream is = Files.newInputStream(Path.of(PROPS_FILE))) {
+            props.load(is);
+        } catch (IOException e) {
+            System.out.println("Ошибка загрузки параметров почты");
+            e.printStackTrace();
+        }
+        Session session = Session.getDefaultInstance(props);
+        MimeMessage message = new MimeMessage(session);
+        message.setFrom(session.getProperty("mail.user"));
+        message.addRecipients(Message.RecipientType.TO, email);
+        message.setSubject("Ссылка для восстановления пароля");
+        message.setText(text);
+        Transport transport = session.getTransport();
+        transport.connect(session.getProperty("mail.user"), session.getProperty("mail.password"));
+        transport.sendMessage(message, message.getAllRecipients());
+        transport.close();
     }
 }
