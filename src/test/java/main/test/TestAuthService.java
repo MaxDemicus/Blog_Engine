@@ -1,9 +1,11 @@
 package main.test;
 
+import main.config.SecurityConfig;
 import main.model.CaptchaCode;
 import main.repository.CaptchaRepository;
 import main.repository.UserRepository;
 import main.request.LoginRequest;
+import main.request.PasswordRequest;
 import main.request.RegisterRequest;
 import main.response.LoginResponse;
 import main.response.ResponseWithErrors;
@@ -96,5 +98,23 @@ public class TestAuthService {
     void testRestorePass() {
         assertFalse(authService.restorePassword("email5@mail.ru").isResult());
         assertTrue(authService.restorePassword("email1@mail.ru").isResult());
+    }
+
+    @DisplayName("Изменение пароля")
+    @Test
+    @Transactional
+    void testChangePassword() {
+        PasswordRequest request = new PasswordRequest("wrong_code", "pass", "wrong_code", "secret");
+        ResponseWithErrors response = authService.changePassword(request);
+        assertFalse(response.isResult());
+        assertThat(response.getErrors()).as("ошибки вводных данных не обнаружены").containsKeys("code", "password", "captcha");
+
+        captchaRepository.save(new CaptchaCode("code", "secret"));
+        request = new PasswordRequest("code1", "new_password", "code", "secret");
+        response = authService.changePassword(request);
+        assertTrue(response.isResult());
+        assertNull(response.getErrors(), "Формат ответа не верный");
+        boolean checkPassword = SecurityConfig.encoder.matches("new_password", userRepository.findByEmail("email1@mail.ru").getPassword());
+        assertTrue(checkPassword, "Пароль не изменён");
     }
 }

@@ -15,4 +15,12 @@ public interface UserRepository extends JpaRepository<User, Integer> {
      * @return пользователь
      */
     User findByEmail(String eMail);
+
+    /**
+     * Находит пользователя с указанным кодом восстановления пароля
+     *
+     * @param code код для восстановления пароля
+     * @return пользователь, если таковой найден, иначе null
+     */
+    User findByCode(String code);
 }

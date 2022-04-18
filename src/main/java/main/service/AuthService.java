@@ -2,12 +2,14 @@ package main.service;
 
 import com.github.cage.Cage;
 import com.github.cage.GCage;
+import main.config.SecurityConfig;
 import main.model.CaptchaCode;
 import main.model.User;
 import main.repository.CaptchaRepository;
 import main.repository.PostRepository;
 import main.repository.UserRepository;
 import main.request.LoginRequest;
+import main.request.PasswordRequest;
 import main.request.RegisterRequest;
 import main.response.CaptchaResponse;
 import main.response.LoginResponse;
@@ -200,5 +202,33 @@ public class AuthService {
         transport.connect(session.getProperty("mail.user"), session.getProperty("mail.password"));
         transport.sendMessage(message, message.getAllRecipients());
         transport.close();
+    }
+
+    /**
+     * Меняет пароль пользователя, если данные введены правильно
+     *
+     * @param request код восстановления пароля, новый пароль и данные каптчи для сверки
+     * @return {"result": true}, если проверка пройдена. Если не пройдена, то "result":false и Map "errors" с указанием ошибок
+     */
+    public ResponseWithErrors changePassword(PasswordRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        if (captchaRepository.checkCaptcha(request.getCaptcha(), request.getCaptchaSecret()) == 0) {
+            errors.put("captcha", "Код с картинки введён неверно");
+        }
+        User user = userRepository.findByCode(request.getCode());
+        if (user == null) {
+            errors.put("code", "Ссылка для восстановления пароля устарела.\n<a href=\"/auth/restore\">Запросить ссылку снова</a>");
+        }
+        if (request.getPassword().length() < 6) {
+            errors.put("password", "Пароль короче 6-ти символов");
+        }
+        if (errors.isEmpty()) {
+            String newPassword = SecurityConfig.encoder.encode(request.getPassword());
+            user.setPassword(newPassword);
+            userRepository.save(user);
+            return new ResponseWithErrors(true);
+        } else {
+            return new ResponseWithErrors(errors);
+        }
     }
 }

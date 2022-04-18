@@ -1,6 +1,7 @@
 package main.controller;
 
 import main.request.LoginRequest;
+import main.request.PasswordRequest;
 import main.request.RegisterRequest;
 import main.request.RestoreRequest;
 import main.response.CaptchaResponse;
@@ -49,5 +50,10 @@ public class ApiAuthController {
     @PostMapping("/restore")
     public ResponseWithErrors restorePass(@RequestBody RestoreRequest request) {
         return authService.restorePassword(request.getEmail());
+    }
+
+    @PostMapping("/password")
+    public ResponseWithErrors changePassword(@RequestBody PasswordRequest request) {
+        return authService.changePassword(request);
     }
 }
