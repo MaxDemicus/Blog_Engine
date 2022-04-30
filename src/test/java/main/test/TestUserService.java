@@ -5,6 +5,7 @@ import main.repository.UserRepository;
 import main.request.LoginRequest;
 import main.request.ProfileRequest;
 import main.response.ResponseWithErrors;
+import main.response.StatisticResponse;
 import main.service.AuthService;
 import main.service.UserService;
 import org.junit.jupiter.api.DisplayName;
@@ -92,5 +93,18 @@ public class TestUserService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @DisplayName("Получение статистики постов")
+    @Test
+    @Transactional
+    void testGetStatistics() {
+        User testUser = userRepository.findByEmail("email3@mail.ru");
+        StatisticResponse response = userService.getStatistics(testUser);
+        assertEquals(5, response.getPostsCount());
+        assertEquals(5, response.getLikesCount());
+        assertEquals(1, response.getDislikesCount());
+        assertEquals(23, response.getViewsCount());
+        assertEquals(1_224_880_346L, response.getFirstPublication());
     }
 }

@@ -16,7 +16,7 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
      * @param query строка для поиска, при отсутствии выводятся все теги
      * @return список кортежей, каждый из которых состоит из двух элементов: имя тега и количество постов с его участием
      */
-    @Query(value = "select t.name as tag, count(p.id) as count" + PostRepository.activePostsAndTagsConditions + " and t.name like :query% group by tag", nativeQuery = true)
+    @Query(value = "select t.name as tag, count(p.id) as count" + PostRepository.ACTIVE_POSTS_AND_TAGS_CONDITIONS + " and t.name like :query% group by tag", nativeQuery = true)
     List<Tuple> getTags(String query);
 
     /**

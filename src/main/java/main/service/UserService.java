@@ -1,9 +1,11 @@
 package main.service;
 
 import main.model.User;
+import main.repository.PostRepository;
 import main.repository.UserRepository;
 import main.request.ProfileRequest;
 import main.response.ResponseWithErrors;
+import main.response.StatisticResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.Authentication;
@@ -12,22 +14,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import javax.persistence.Tuple;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.util.*;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final GeneralService generalService;
+    private final PostRepository postRepository;
 
-    public UserService(UserRepository userRepository, GeneralService generalService) {
+    public UserService(UserRepository userRepository, GeneralService generalService, PostRepository postRepository) {
         this.userRepository = userRepository;
         this.generalService = generalService;
+        this.postRepository = postRepository;
     }
 
     /**
@@ -46,7 +51,7 @@ public class UserService {
     /**
      * Изменяет данные профиля
      *
-     * @param photo картинка для размещения в профиле
+     * @param photo   картинка для размещения в профиле
      * @param request данные, введённые пользователем в форму
      * @return True, усли сохранение успешно, false и список ошибок, если нет
      */
@@ -101,5 +106,28 @@ public class UserService {
             e.printStackTrace();
         }
         return result;
+    }
+
+    /**
+     * Возвращает информацию о постах, созданных данным пользователем и доступных для чтения:
+     * количество публикаций, количество лайков, дизлайков и просмотров, дата самой первой публикации
+     *
+     * @param user пользователь, чья статистика ищется
+     * @return объект, содержащий агрегированные параметры всех постов пользователя, доступных для чтения:
+     * количество постов, количество лайков и дизлайков, количество просмотров, дата и время первой публикации.
+     */
+    public StatisticResponse getStatistics(User user) {
+        Tuple statistics;
+        if (user == null) {
+            statistics = postRepository.findFullStatistics();
+        } else {
+            statistics = postRepository.findStatisticsByUser(user.getId());
+        }
+        int postsCount = ((Number) statistics.get("PostsCount")).intValue();
+        long likesCount = ((Number) statistics.get("LikesCount")).longValue();
+        long dislikesCount = ((Number) statistics.get("DislikesCount")).longValue();
+        int viewsCount = ((Number) statistics.get("ViewsCount")).intValue();
+        long firstPublication = ((Timestamp) statistics.get("FirstPublication")).getTime() / 1000;
+        return new StatisticResponse(postsCount, likesCount, dislikesCount, viewsCount, firstPublication);
     }
 }

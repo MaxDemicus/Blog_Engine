@@ -12,10 +12,16 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
-    String activePostsConditions = " from posts p " +
+    String ACTIVE_POSTS_CONDITIONS = " from posts p " +
             "where p.is_active = 1 and p.moderation_status = 'ACCEPTED' and p.time < now()";
-    String activePostsAndTagsConditions = " from posts p inner join tag2post tp on p.id=tp.post_id inner join tags t on tp.tag_id=t.id " +
+    String ACTIVE_POSTS_AND_TAGS_CONDITIONS = " from posts p inner join tag2post tp on p.id=tp.post_id inner join tags t on tp.tag_id=t.id " +
             "where p.is_active = 1 and p.moderation_status = 'ACCEPTED' and p.time < now()";
+    String GET_STATISTICS_QUERY_PART1 = "select count(*) as PostsCount, sum(likes) as LikesCount, sum(dislikes) as DislikesCount, sum(view_count) as ViewsCount, min(time) as FirstPublication " +
+            "from (select p.time, view_count, count(case when value = 1 then 1 else null end) as likes, count(case when value = -1 then 1 else null end) as dislikes " +
+            "from posts as p " +
+            "left join post_votes v on p.id=v.post_id " +
+            "where p.is_active = 1 and p.moderation_status = 'ACCEPTED' and p.time < now() ";
+    String GET_STATISTICS_QUERY_PART2 = "group by p.id) as post_data";
 
     /**
      * Возвращает активные посты для главной страницы и подразделов
@@ -23,7 +29,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @param page объект PаgeRequest, задающий пагинацию и метод сортировки
      * @return список постов
      */
-    @Query(value = "select *" + activePostsConditions, nativeQuery = true)
+    @Query(value = "select *" + ACTIVE_POSTS_CONDITIONS, nativeQuery = true)
     Page<Post> findActivePosts(PageRequest page);
 
     /**
@@ -33,7 +39,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @param query посиковый запрос
      * @return список постов
      */
-    @Query(value = "select *" + activePostsConditions + " and p.text like %?1%", nativeQuery = true)
+    @Query(value = "select *" + ACTIVE_POSTS_CONDITIONS + " and p.text like %?1%", nativeQuery = true)
     Page<Post> findActivePostsBySearch(String query, PageRequest page);
 
     /**
@@ -43,7 +49,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @param date поисковый запрос
      * @return список постов
      */
-    @Query(value = "select *" + activePostsConditions + " and date(time) = ?1", nativeQuery = true)
+    @Query(value = "select *" + ACTIVE_POSTS_CONDITIONS + " and date(time) = ?1", nativeQuery = true)
     Page<Post> findActivePostsByDate(String date, PageRequest page);
 
     /**
@@ -53,7 +59,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @param tag  запрошенный тег
      * @return список постов
      */
-    @Query(value = "select p.*" + activePostsAndTagsConditions + " and t.name = ?1", nativeQuery = true)
+    @Query(value = "select p.*" + ACTIVE_POSTS_AND_TAGS_CONDITIONS + " and t.name = ?1", nativeQuery = true)
     Page<Post> findActivePostsByTag(String tag, PageRequest page);
 
     /**
@@ -109,7 +115,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      *
      * @return Список годов в порядке возрастания
      */
-    @Query(value = "select year(time) as year" + activePostsConditions + " group by year order by year", nativeQuery = true)
+    @Query(value = "select year(time) as year" + ACTIVE_POSTS_CONDITIONS + " group by year order by year", nativeQuery = true)
     List<Integer> getYears();
 
     /**
@@ -118,6 +124,17 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
      * @param year год
      * @return список кортежей (класс {@link Tuple}) формата 'дата - количеств публикаций'
      */
-    @Query(value = "select date(time) as date, count(*) as count" + activePostsConditions + " and year(time) = :year group by date(time)", nativeQuery = true)
+    @Query(value = "select date(time) as date, count(*) as count" + ACTIVE_POSTS_CONDITIONS + " and year(time) = :year group by date(time)", nativeQuery = true)
     List<Tuple> getCalendar(String year);
+
+    /**
+     * Возвращает информацию о постах, созданных данным пользователем и доступных для чтения:
+     * количество публикаций, количество лайков, дизлайков и просмотров, дата самой первой публикации
+     *
+     * @param userId номер пользователя
+     * @return список постов
+     */
+    @Query(value = GET_STATISTICS_QUERY_PART1 + "and p.user_id = ?1 " + GET_STATISTICS_QUERY_PART2, nativeQuery = true)
+    Tuple findStatisticsByUser(int userId);
+
 }

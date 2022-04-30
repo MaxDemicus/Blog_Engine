@@ -3,10 +3,7 @@ package main.controller;
 import main.request.CommentRequest;
 import main.request.ModerateRequest;
 import main.request.ProfileRequest;
-import main.response.CalendarResponse;
-import main.response.InitResponse;
-import main.response.ResponseWithErrors;
-import main.response.TagResponse;
+import main.response.*;
 import main.service.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -86,5 +83,11 @@ public class ApiGeneralController {
     @PreAuthorize("hasAuthority('WRITE')")
     public ResponseEntity<ResponseWithErrors> postProfileWithPhoto(@ModelAttribute ProfileRequest request, @RequestPart MultipartFile photo) {
         return userService.editProfile(request, photo);
+    }
+
+    @GetMapping("/statistics/my")
+    @PreAuthorize("hasAuthority('WRITE')")
+    public StatisticResponse getMyStatistics() {
+        return userService.getStatistics(userService.getCurrentUser());
     }
 }
