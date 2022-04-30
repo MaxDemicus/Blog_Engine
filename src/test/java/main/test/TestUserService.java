@@ -1,6 +1,8 @@
 package main.test;
 
+import main.model.GlobalSetting;
 import main.model.User;
+import main.repository.GlobalSettingRepository;
 import main.repository.UserRepository;
 import main.request.LoginRequest;
 import main.request.ProfileRequest;
@@ -39,6 +41,9 @@ public class TestUserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private GlobalSettingRepository globalSettingRepository;
 
     @DisplayName("Изменение профиля")
     @Test
@@ -100,11 +105,33 @@ public class TestUserService {
     @Transactional
     void testGetStatistics() {
         User testUser = userRepository.findByEmail("email3@mail.ru");
-        StatisticResponse response = userService.getStatistics(testUser);
+        User testModerator = userRepository.findByEmail("email2@mail.ru");
+
+        //тест при включенном публичном доступе
+        StatisticResponse response = userService.getStatistics(testUser, false).getBody();
         assertEquals(5, response.getPostsCount());
         assertEquals(5, response.getLikesCount());
         assertEquals(1, response.getDislikesCount());
         assertEquals(23, response.getViewsCount());
         assertEquals(1_224_880_346L, response.getFirstPublication());
+
+        //доступ к полной статистике блога без авторизации
+        response = userService.getStatistics(null, true).getBody();
+        assertEquals(9, response.getPostsCount());
+        assertEquals(5, response.getLikesCount());
+        assertEquals(5, response.getDislikesCount());
+        assertEquals(38, response.getViewsCount());
+        assertEquals(1_224_880_346L, response.getFirstPublication());
+
+        //отключаем публичный доступ к статистике
+        GlobalSetting statisticsSetting = globalSettingRepository.findById(3).orElseThrow();
+        statisticsSetting.setValue("NO");
+        globalSettingRepository.saveAndFlush(statisticsSetting);
+
+        //тест при выключенном публичном доступе
+        int code = userService.getStatistics(testUser, false).getStatusCodeValue();
+        assertEquals(401, code);
+        code = userService.getStatistics(testModerator, false).getStatusCodeValue();
+        assertEquals(200, code);
     }
 }

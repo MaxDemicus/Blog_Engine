@@ -137,4 +137,12 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     @Query(value = GET_STATISTICS_QUERY_PART1 + "and p.user_id = ?1 " + GET_STATISTICS_QUERY_PART2, nativeQuery = true)
     Tuple findStatisticsByUser(int userId);
 
+    /**
+     * Возвращает информацию о всех постах, доступных для чтения:
+     * количество публикаций, количество лайков, дизлайков и просмотров, дата самой первой публикации
+     *
+     * @return список постов
+     */
+    @Query(value = GET_STATISTICS_QUERY_PART1 + GET_STATISTICS_QUERY_PART2, nativeQuery = true)
+    Tuple findFullStatistics();
 }

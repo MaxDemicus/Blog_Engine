@@ -87,7 +87,12 @@ public class ApiGeneralController {
 
     @GetMapping("/statistics/my")
     @PreAuthorize("hasAuthority('WRITE')")
-    public StatisticResponse getMyStatistics() {
-        return userService.getStatistics(userService.getCurrentUser());
+    public ResponseEntity<StatisticResponse> getMyStatistics() {
+        return userService.getStatistics(userService.getCurrentUser(), false);
+    }
+
+    @GetMapping("/statistics/all")
+    public ResponseEntity<StatisticResponse> getAllStatistics() {
+        return userService.getStatistics(userService.getCurrentUser(), true);
     }
 }
