@@ -1,10 +1,12 @@
 package main.controller;
 
 import main.request.PostRequest;
+import main.request.VoteRequest;
 import main.response.ResponseWithErrors;
 import main.response.post.InnerPostFullResponse;
 import main.response.post.PostResponse;
 import main.service.PostService;
+import main.service.VoteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 public class ApiPostController {
 
     private final PostService postService;
+    private final VoteService voteService;
 
-    public ApiPostController(PostService postService) {
+    public ApiPostController(PostService postService, VoteService voteService) {
         this.postService = postService;
+        this.voteService = voteService;
     }
 
     @GetMapping()
@@ -66,5 +70,17 @@ public class ApiPostController {
     @PreAuthorize("hasAuthority('WRITE')")
     public ResponseWithErrors editPost(@RequestBody PostRequest request, @PathVariable int ID) {
         return postService.editPost(request, ID);
+    }
+
+    @PostMapping("/like")
+    @PreAuthorize("hasAuthority('WRITE')")
+    public ResponseWithErrors likePost(@RequestBody VoteRequest request) {
+        return voteService.voteForPost(request, (byte) 1);
+    }
+
+    @PostMapping("/dislike")
+    @PreAuthorize("hasAuthority('WRITE')")
+    public ResponseWithErrors dislikePost(@RequestBody VoteRequest request) {
+        return voteService.voteForPost(request, (byte) -1);
     }
 }

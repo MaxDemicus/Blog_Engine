@@ -10,6 +10,8 @@ import java.sql.Timestamp;
 @Data
 public class PostVote {
 
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
