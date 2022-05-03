@@ -5,6 +5,7 @@ import main.repository.GlobalSettingRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -18,6 +19,7 @@ public class GlobalSettingService {
 
     /**
      * Возвращает глобальные настройки блога
+     *
      * @return HashMap, где key - название настройки, value - значение настройки ('YES' или 'NO')
      */
     public Map<String, Boolean> getSettings() {
@@ -26,5 +28,26 @@ public class GlobalSettingService {
             settings.put(setting.getCode(), setting.getValue().equals("YES"));
         }
         return settings;
+    }
+
+    /**
+     * Записывает глобальные настройки блога в базу данных
+     *
+     * @param request список настроек и их значений
+     */
+    public void saveSettings(Map<String, Boolean> request) {
+        List<GlobalSetting> settings = globalSettingRepository.findAll();
+        for (GlobalSetting setting : settings) {
+            Boolean newValue = request.getOrDefault(setting.getCode(), null);
+            if (newValue == null) {
+                continue;
+            }
+            if (newValue) {
+                setting.setValue("YES");
+            } else {
+                setting.setValue("NO");
+            }
+        }
+        globalSettingRepository.saveAll(settings);
     }
 }

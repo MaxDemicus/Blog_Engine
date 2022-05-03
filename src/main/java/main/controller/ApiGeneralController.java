@@ -45,6 +45,12 @@ public class ApiGeneralController {
         return globalSettingService.getSettings();
     }
 
+    @PutMapping("/settings")
+    @PreAuthorize("hasAuthority('MODERATE')")
+    public void saveSettings(@RequestBody Map<String, Boolean> request){
+        globalSettingService.saveSettings(request);
+    }
+
     @GetMapping("/tag")
     public TagResponse getTags(@RequestParam(defaultValue = "") String query){
         return tagsService.getTags(query);
