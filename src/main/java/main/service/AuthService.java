@@ -6,6 +6,7 @@ import main.config.SecurityConfig;
 import main.model.CaptchaCode;
 import main.model.User;
 import main.repository.CaptchaRepository;
+import main.repository.GlobalSettingRepository;
 import main.repository.PostRepository;
 import main.repository.UserRepository;
 import main.request.LoginRequest;
@@ -15,6 +16,7 @@ import main.response.CaptchaResponse;
 import main.response.LoginResponse;
 import main.response.ResponseWithErrors;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -46,12 +48,14 @@ public class AuthService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final PostRepository postRepository;
+    private final GlobalSettingRepository globalSettingRepository;
 
-    public AuthService(CaptchaRepository captchaRepository, UserRepository userRepository, AuthenticationManager authenticationManager, PostRepository postRepository) {
+    public AuthService(CaptchaRepository captchaRepository, UserRepository userRepository, AuthenticationManager authenticationManager, PostRepository postRepository, GlobalSettingRepository globalSettingRepository) {
         this.captchaRepository = captchaRepository;
         this.userRepository = userRepository;
         this.authenticationManager = authenticationManager;
         this.postRepository = postRepository;
+        this.globalSettingRepository = globalSettingRepository;
     }
 
     /**
@@ -132,13 +136,17 @@ public class AuthService {
      * @param request объект {@link RegisterRequest} с данными пользователя и проверкой каптчи
      * @return {"result": true}, если проверка пройдена. Если не пройдена, то "result":false и Map "errors" с указанием ошибок
      */
-    public ResponseWithErrors register(RegisterRequest request) {
+    public ResponseEntity<ResponseWithErrors> register(RegisterRequest request) {
+        boolean multiuser = globalSettingRepository.findValueByCode("MULTIUSER_MODE").equalsIgnoreCase("YES");
+        if (!multiuser) {
+            return ResponseEntity.notFound().build();
+        }
         Map<String, String> errors = checkRegisterRequest(request);
         if (errors.isEmpty()) {
             userRepository.save(User.from(request));
-            return new ResponseWithErrors(true);
+            return ResponseEntity.ok(new ResponseWithErrors(true));
         } else {
-            return new ResponseWithErrors(errors);
+            return ResponseEntity.ok(new ResponseWithErrors(errors));
         }
     }
 

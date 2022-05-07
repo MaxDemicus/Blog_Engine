@@ -8,6 +8,7 @@ import main.response.CaptchaResponse;
 import main.response.LoginResponse;
 import main.response.ResponseWithErrors;
 import main.service.AuthService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -33,7 +34,7 @@ public class ApiAuthController {
     }
 
     @PostMapping("/register")
-    public ResponseWithErrors register(@RequestBody RegisterRequest user){
+    public ResponseEntity<ResponseWithErrors> register(@RequestBody RegisterRequest user){
         return authService.register(user);
     }
 

@@ -3,6 +3,7 @@ package main.test;
 import main.config.SecurityConfig;
 import main.model.CaptchaCode;
 import main.repository.CaptchaRepository;
+import main.repository.GlobalSettingRepository;
 import main.repository.UserRepository;
 import main.request.LoginRequest;
 import main.request.PasswordRequest;
@@ -37,6 +38,9 @@ public class TestAuthService {
     @Autowired
     private EntityManager em;
 
+    @Autowired
+    private GlobalSettingRepository globalSettingRepository;
+
     @DisplayName("Запрос каптчи")
     @Test
     @Transactional
@@ -57,16 +61,23 @@ public class TestAuthService {
 
         //Проверка неправильных данных
         RegisterRequest testRequest = new RegisterRequest("email1@mail.ru", "pass", "имя", "wrong_code", "secret");
-        ResponseWithErrors response = authService.register(testRequest);
+        ResponseWithErrors response = authService.register(testRequest).getBody();
+        assertNotNull(response);
         assertFalse(response.isResult());
         assertThat(response.getErrors()).as("ошибки вводных данных не обнаружены").containsKeys("email", "name", "password", "captcha");
 
         //Проверка правильных данных
         testRequest = new RegisterRequest("test_mail@mail.ru", "password", "name", "code", "secret");
-        response = authService.register(testRequest);
+        response = authService.register(testRequest).getBody();
         assertNotNull(userRepository.findByEmail("test_mail@mail.ru"), "Пользователь не добавлен в базу");
+        assertNotNull(response);
         assertTrue(response.isResult());
         assertNull(response.getErrors(), "Формат ответа не верный");
+
+        //Проверка при запрете новых регистраций
+        em.createNativeQuery("update global_settings set value = 'NO' where code = 'MULTIUSER_MODE'").executeUpdate();
+        int code = authService.register(testRequest).getStatusCodeValue();
+        assertEquals(404, code);
     }
 
     @DisplayName("Авторизация")
