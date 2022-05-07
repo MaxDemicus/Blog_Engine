@@ -6,6 +6,8 @@ import main.enums.PostStatusInRequest;
 import main.enums.SortMode;
 import main.model.Post;
 import main.model.Tag;
+import main.model.User;
+import main.repository.GlobalSettingRepository;
 import main.repository.PostRepository;
 import main.request.ModerateRequest;
 import main.request.PostRequest;
@@ -32,12 +34,14 @@ public class PostService {
     private final UserService userService;
     private final TagsService tagsService;
     private final AuthService authService;
+    private final GlobalSettingRepository globalSettingRepository;
 
-    public PostService(PostRepository postRepository, UserService userService, TagsService tagsService, AuthService authService) {
+    public PostService(PostRepository postRepository, UserService userService, TagsService tagsService, AuthService authService, GlobalSettingRepository globalSettingRepository) {
         this.postRepository = postRepository;
         this.userService = userService;
         this.tagsService = tagsService;
         this.authService = authService;
+        this.globalSettingRepository = globalSettingRepository;
     }
 
     /**
@@ -248,8 +252,14 @@ public class PostService {
         }
         Post post = new Post();
         post.fillFromRequest(request);
-        post.setModerationStatus(PostStatusInDB.NEW);
-        post.setUser(userService.getCurrentUser());
+        User currentUser = userService.getCurrentUser();
+        boolean premoderation = globalSettingRepository.findValueByCode("POST_PREMODERATION").equalsIgnoreCase("YES");
+        if (premoderation && currentUser.getIsModerator() == 0) {
+            post.setModerationStatus(PostStatusInDB.NEW);
+        } else {
+            post.setModerationStatus(PostStatusInDB.ACCEPTED);
+        }
+        post.setUser(currentUser);
         List<Tag> tags = tagsService.getTagsForPost(request.getTags());
         post.setTags(tags);
         postRepository.saveAndFlush(post);
@@ -273,7 +283,8 @@ public class PostService {
             return new ResponseWithErrors(false);
         }
         post.fillFromRequest(request);
-        if (userService.getCurrentUser().getId() == post.getUser().getId()) {
+        boolean premoderation = globalSettingRepository.findValueByCode("POST_PREMODERATION").equalsIgnoreCase("YES");
+        if (premoderation && userService.getCurrentUser().getId() == post.getUser().getId()) {
             post.setModerationStatus(PostStatusInDB.NEW);
         }
         List<Tag> tags = tagsService.getTagsForPost(request.getTags());

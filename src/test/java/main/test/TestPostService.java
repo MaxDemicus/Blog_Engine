@@ -22,7 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.*;
@@ -38,6 +40,8 @@ public class TestPostService {
     AuthService authService;
     @Autowired
     PostRepository postRepository;
+    @Autowired
+    private EntityManager em;
 
     private PostResponse response;
 
@@ -143,15 +147,34 @@ public class TestPostService {
     @Test
     @Transactional
     void testAddPost() {
-        authService.login(new LoginRequest("email2@mail.ru", "password2"));
         PostRequest request = new PostRequest(
                 System.currentTimeMillis(),
                 (byte) 1,
                 "new_title",
                 "text_text_text_text_text_text_text_text_text_text_",
                 List.of("tag1 для постов 1 и 2"));
+
+        //создание поста простым пользователем
+        authService.login(new LoginRequest("email3@mail.ru", "password3"));
         postService.addPost(request);
-        assertTrue(postRepository.findById(15).isPresent());
+        Optional<Post> post = postRepository.findById(15);
+        assertTrue(post.isPresent());
+        assertEquals(PostStatusInDB.NEW, post.get().getModerationStatus());
+
+        //создание поста модератором
+        authService.login(new LoginRequest("email2@mail.ru", "password2"));
+        postService.addPost(request);
+        post = postRepository.findById(16);
+        assertTrue(post.isPresent());
+        assertEquals(PostStatusInDB.ACCEPTED, post.get().getModerationStatus());
+
+        //создание поста простым пользователем с отключенной премодерацией
+        authService.login(new LoginRequest("email3@mail.ru", "password3"));
+        em.createNativeQuery("update global_settings set value = 'NO' where code = 'POST_PREMODERATION'").executeUpdate();
+        postService.addPost(request);
+        post = postRepository.findById(17);
+        assertTrue(post.isPresent());
+        assertEquals(PostStatusInDB.ACCEPTED, post.get().getModerationStatus());
     }
 
     @DisplayName("Редактирование поста")
@@ -170,7 +193,7 @@ public class TestPostService {
         assertEquals(0, post.getIsActive());
         assertEquals("new_title", post.getTitle());
         assertEquals("text_text_text_text_text_text_text_text_text_text_", post.getText());
-        assertEquals(post.getModerationStatus(), PostStatusInDB.NEW);
+        assertEquals(PostStatusInDB.NEW, post.getModerationStatus());
         List<String> tags = post.getTags().stream().map(Tag::getName).collect(Collectors.toList());
         assertThat(tags).containsOnly("tag1 для постов 1 и 2", "tag2 для поста 1", "new_tag");
     }
