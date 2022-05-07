@@ -1,6 +1,5 @@
 package main.test;
 
-import main.model.GlobalSetting;
 import main.model.User;
 import main.repository.GlobalSettingRepository;
 import main.repository.UserRepository;
@@ -19,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,6 +44,9 @@ public class TestUserService {
 
     @Autowired
     private GlobalSettingRepository globalSettingRepository;
+
+    @Autowired
+    private EntityManager em;
 
     @DisplayName("Изменение профиля")
     @Test
@@ -109,6 +112,7 @@ public class TestUserService {
 
         //тест при включенном публичном доступе
         StatisticResponse response = userService.getStatistics(testUser, false).getBody();
+        assertNotNull(response);
         assertEquals(5, response.getPostsCount());
         assertEquals(5, response.getLikesCount());
         assertEquals(1, response.getDislikesCount());
@@ -117,6 +121,7 @@ public class TestUserService {
 
         //доступ к полной статистике блога без авторизации
         response = userService.getStatistics(null, true).getBody();
+        assertNotNull(response);
         assertEquals(9, response.getPostsCount());
         assertEquals(5, response.getLikesCount());
         assertEquals(5, response.getDislikesCount());
@@ -124,14 +129,14 @@ public class TestUserService {
         assertEquals(1_224_880_346L, response.getFirstPublication());
 
         //отключаем публичный доступ к статистике
-        GlobalSetting statisticsSetting = globalSettingRepository.findById(3).orElseThrow();
-        statisticsSetting.setValue("NO");
-        globalSettingRepository.saveAndFlush(statisticsSetting);
+        em.createNativeQuery("update global_settings set value = 'NO' where code = 'STATISTICS_IS_PUBLIC'").executeUpdate();
 
         //тест при выключенном публичном доступе
         int code = userService.getStatistics(testUser, false).getStatusCodeValue();
+        assertEquals(200, code);
+        code = userService.getStatistics(testUser, true).getStatusCodeValue();
         assertEquals(401, code);
-        code = userService.getStatistics(testModerator, false).getStatusCodeValue();
+        code = userService.getStatistics(testModerator, true).getStatusCodeValue();
         assertEquals(200, code);
     }
 }

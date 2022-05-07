@@ -21,7 +21,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             "from posts as p " +
             "left join post_votes v on p.id=v.post_id " +
             "where p.is_active = 1 and p.moderation_status = 'ACCEPTED' and p.time < now() ";
-    String GET_STATISTICS_QUERY_PART2 = "group by p.id) as post_data";
+    String GET_STATISTICS_QUERY_PART2 = "group by p.id, p.time, view_count) as post_data";
 
     /**
      * Возвращает активные посты для главной страницы и подразделов

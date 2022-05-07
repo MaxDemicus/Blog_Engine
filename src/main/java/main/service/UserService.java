@@ -1,6 +1,7 @@
 package main.service;
 
 import main.model.User;
+import main.repository.GlobalSettingRepository;
 import main.repository.PostRepository;
 import main.repository.UserRepository;
 import main.request.ProfileRequest;
@@ -28,13 +29,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final GeneralService generalService;
     private final PostRepository postRepository;
-    private final GlobalSettingService globalSettingService;
+    private final GlobalSettingRepository globalSettingRepository;
 
-    public UserService(UserRepository userRepository, GeneralService generalService, PostRepository postRepository, GlobalSettingService globalSettingService) {
+    public UserService(UserRepository userRepository, GeneralService generalService, PostRepository postRepository, GlobalSettingRepository globalSettingRepository) {
         this.userRepository = userRepository;
         this.generalService = generalService;
         this.postRepository = postRepository;
-        this.globalSettingService = globalSettingService;
+        this.globalSettingRepository = globalSettingRepository;
     }
 
     /**
@@ -119,7 +120,9 @@ public class UserService {
      * количество постов, количество лайков и дизлайков, количество просмотров, дата и время первой публикации.
      */
     public ResponseEntity<StatisticResponse> getStatistics(User user, boolean full) {
-        if (!checkAccess(user)) {
+        boolean setting = globalSettingRepository.findValueByCode("STATISTICS_IS_PUBLIC").equalsIgnoreCase("YES");
+        boolean access = user != null && user.getIsModerator() == 1;
+        if ((full && !setting && !access) || (!full && user == null)) {
             return ResponseEntity.status(401).build();
         }
         Tuple statistics;
@@ -135,13 +138,5 @@ public class UserService {
         long firstPublication = ((Timestamp) statistics.get("FirstPublication")).getTime() / 1000;
         StatisticResponse responseBody = new StatisticResponse(postsCount, likesCount, dislikesCount, viewsCount, firstPublication);
         return ResponseEntity.ok(responseBody);
-    }
-
-    private boolean checkAccess(User user) {
-        boolean setting = globalSettingService.getSettings().get("STATISTICS_IS_PUBLIC");
-        if (setting) {
-            return true;
-        }
-        return user != null && user.getIsModerator() != 0;
     }
 }
