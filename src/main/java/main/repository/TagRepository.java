@@ -13,6 +13,7 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
 
     /**
      * Возвращает список тэгов, начинающихся на строку, заданную в параметре query, и количество публикаций с ними
+     *
      * @param query строка для поиска, при отсутствии выводятся все теги
      * @return список кортежей, каждый из которых состоит из двух элементов: имя тега и количество постов с его участием
      */
@@ -20,9 +21,11 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
     List<Tuple> getTags(String query);
 
     /**
-     * Ищет тег по имени
-     * @param name название тега
-     * @return найденный тег
+     * Ищет теги по списку имён
+     *
+     * @param names список имён
+     * @return список тегов
      */
-    Tag findByName(String name);
+    @Query(value = "select * from tags where name in :names", nativeQuery = true)
+    List<Tag> findAllByNames(List<String> names);
 }

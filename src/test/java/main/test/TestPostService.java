@@ -164,15 +164,15 @@ public class TestPostService {
                 (byte) 0,
                 "new_title",
                 "text_text_text_text_text_text_text_text_text_text_",
-                List.of("tag1 для постов 1 и 2", "tag2 для поста 1"));
+                List.of("tag1 для постов 1 и 2", "tag2 для поста 1", "new_tag"));
         postService.editPost(request, 2);
-        Post post = postRepository.findById(2).get();
+        Post post = postRepository.findById(2).orElseThrow();
         assertEquals(0, post.getIsActive());
         assertEquals("new_title", post.getTitle());
         assertEquals("text_text_text_text_text_text_text_text_text_text_", post.getText());
         assertEquals(post.getModerationStatus(), PostStatusInDB.NEW);
         List<String> tags = post.getTags().stream().map(Tag::getName).collect(Collectors.toList());
-        assertThat(tags).containsOnly("tag1 для постов 1 и 2", "tag2 для поста 1");
+        assertThat(tags).containsOnly("tag1 для постов 1 и 2", "tag2 для поста 1", "new_tag");
     }
 
     @DisplayName("Модерация поста")
@@ -189,7 +189,7 @@ public class TestPostService {
         request = new ModerateRequest(1, "accept");
         ResponseWithErrors response = postService.moderatePost(request);
         assertTrue(response.isResult());
-        Post post = postRepository.findById(1).get();
+        Post post = postRepository.findById(1).orElseThrow();
         assertEquals(1, post.getModerator().getId());
         assertEquals(PostStatusInDB.ACCEPTED, post.getModerationStatus());
     }

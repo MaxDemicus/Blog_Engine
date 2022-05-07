@@ -7,7 +7,6 @@ import main.enums.SortMode;
 import main.model.Post;
 import main.model.Tag;
 import main.repository.PostRepository;
-import main.repository.TagRepository;
 import main.request.ModerateRequest;
 import main.request.PostRequest;
 import main.response.*;
@@ -31,13 +30,13 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserService userService;
-    private final TagRepository tagRepository;
+    private final TagsService tagsService;
     private final AuthService authService;
 
-    public PostService(PostRepository postRepository, UserService userService, TagRepository tagRepository, AuthService authService) {
+    public PostService(PostRepository postRepository, UserService userService, TagsService tagsService, AuthService authService) {
         this.postRepository = postRepository;
         this.userService = userService;
-        this.tagRepository = tagRepository;
+        this.tagsService = tagsService;
         this.authService = authService;
     }
 
@@ -251,10 +250,7 @@ public class PostService {
         post.fillFromRequest(request);
         post.setModerationStatus(PostStatusInDB.NEW);
         post.setUser(userService.getCurrentUser());
-        List<Tag> tags = new ArrayList<>();
-        for (String tagName : request.getTags()) {
-            tags.add(tagRepository.findByName(tagName));
-        }
+        List<Tag> tags = tagsService.getTagsForPost(request.getTags());
         post.setTags(tags);
         postRepository.saveAndFlush(post);
         return new ResponseWithErrors(true);
@@ -280,10 +276,7 @@ public class PostService {
         if (userService.getCurrentUser().getId() == post.getUser().getId()) {
             post.setModerationStatus(PostStatusInDB.NEW);
         }
-        List<Tag> tags = new ArrayList<>();
-        for (String tagName : request.getTags()) {
-            tags.add(tagRepository.findByName(tagName));
-        }
+        List<Tag> tags = tagsService.getTagsForPost(request.getTags());
         post.setTags(tags);
         postRepository.saveAndFlush(post);
         return new ResponseWithErrors(true);
